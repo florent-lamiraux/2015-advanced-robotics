@@ -140,22 +140,6 @@ Algorithm~\ref{algo:random-shortcut}) and is no efficient due to randomness for 
 \end{figure}
 
 
-\begin{figure}[H]
-	\centering
-	\includegraphics[height=4.9cm,width=1.8cm]{pr2_initial_final_vertical.png}
-	\includegraphics[width=5.7cm]{p0_pr2_alone_merged3.png}
-	\includegraphics[height=4.9cm]{p1RS_pr2_alone_merged3.png}
-	\includegraphics[height=4.9cm]{p1GB_pr2_alone_merged3.png}\\
-	\caption{In this motion planning problem, PR2 robot has just to 
-exchange the positions of its arms. The task is simple, however, in absence of 
-explicit indication, any probabilistic motion planner will compute a path that 
-makes the PR2 mobile basis purposelessly moving. This is the case of RRT-connect 
-algorithm (left). Path optimization is expected to remove unnecessary motions. 
-The popular random shortcut algorithm fails in this case (middle). Our algorithm 
-succeeds (right).}
-	\label{pr2-final}
-\end{figure}
-
 On the other hand, numerical
 optimization methods like CHOMP~\cite{RatliffChomp} can be used as a
 post-processing step. They have clear termination conditions, but collision
@@ -500,38 +484,25 @@ encountered in the optimization literature, procuring larger steps but with more
 risks of collision.
 
 \begin{algorithm}
-\begin{algorithmic}[1] % line numerotation
+\begin{algorithmic}%[1] % line numerotation
 \Procedure{Optimize}{$\xx_0$}
-	\State $\alpha \gets \alpha_{init}$; $\epsilon \gets 10^{-3}$
+	\State $\alpha \gets \alpha_{init}$
 	\State $minReached \gets false$
-	\State $validConstraints \gets true$
 	\While{($\textbf{not}(noCollision \textbf{ and } minReached)$)}
 		\State $\p = \texttt{computeIterate}()$
-		\State $minReached = (||\p||<\epsilon \textbf{ or } \alpha=1)$\label{algo:minReached}
+		\State $minReached = (||\p||<10^{-3} \textbf{ or } \alpha=1)$
 		\State $\xx_1 \gets \xx_0 + \alpha\,\p$
-		\If{($\alpha \neq 1$)}
-			%\State \texttt{solveConstraints($\xx_1$)}
-			\If{(\textbf{not}(\texttt{solveConstraints($\xx_1$)}))} \label{algo:solveCons}
-				\State $\alpha \gets \alpha*0.5$
-				\State $validConstraints \gets false$\label{algo:solveCons2}
-			\Else
-				\State $validConstraints \gets true$
-			\EndIf
-		\EndIf
 		\If{(\textbf{not}(\texttt{validatePath($\xx_1$)}))}
 			\State $noCollision \gets false$
 			\If{$(\alpha \neq 1)$}
-				\State \texttt{addCollisionConstraints}()\label{algo:addCons}
+				\State \texttt{addCollisionConstraints}()
 				\State $\alpha \gets 1$
 			\Else
-				\If{($validConstraints$)}\label{algo:towardMin}
-					\State $\alpha \gets \alpha_{init}$\label{algo:towardMin2}
-				\EndIf
+				\State $\alpha \gets \alpha_{init}$
 			\EndIf
 		\Else
 			\State $\xx_0 \gets \xx_1$
-			\State $noCollision \gets true$\label{algo:noCollision}
-			\State $\alpha \gets 0.5*(1+\alpha)$
+			\State $noCollision \gets true$
 		\EndIf
 	\EndWhile
 	\Return $\xx_0$
@@ -541,10 +512,10 @@ risks of collision.
 \end{algorithm}
 
 Each time a collision-constraint is added, 
-the solution of the current QP is tested (i.e. $\alpha = 1$). If this path is collision-free, the algorithm returns it as the solution (lines~\ref{algo:minReached}-\ref{algo:noCollision}). Otherwise, 
-smaller steps are iteratively applied and tested toward the minimum (lines~\ref{algo:towardMin}-\ref{algo:towardMin2}), and constraints are added each time a collision is found (line~\ref{algo:addCons}).
+the solution of the current QP is tested (i.e. $\alpha = 1$). If this path is collision-free, the algorithm returns it as the solution. Otherwise, 
+smaller steps are iteratively applied and tested toward the minimum, and constraints are added each time a collision is found.
 
-If the constraint relinearization fails to validate Property~\ref{prop:collision free}, $\alpha$ is halved and the algorithm restarts from the latest valid path (lines~\ref{algo:solveCons}-\ref{algo:solveCons2}).
+If the constraint relinearization fails to validate Property~\ref{prop:collision free}, $\alpha$ is halved and the algorithm restarts from the latest valid path.
 
 
 \section{RESULTS}
@@ -694,6 +665,22 @@ because there are not so many DOF to play on to easily avoid collisions and
 return a small-cost solution.
 We advance this explanation because on the two following high-DOF examples of the video (and Figure~\ref{pr2_final}), results are better 
 in terms of path length and quality.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[height=4.9cm,width=1.8cm]{pr2_initial_final_vertical.png}
+	\includegraphics[width=5.7cm]{p0_pr2_alone_merged3.png}
+	\includegraphics[height=4.9cm]{p1RS_pr2_alone_merged3.png}
+	\includegraphics[height=4.9cm]{p1GB_pr2_alone_merged3.png}\\
+	\caption{In this motion planning problem, PR2 robot has just to 
+exchange the positions of its arms. The task is simple, however, in absence of 
+explicit indication, any probabilistic motion planner will compute a path that 
+makes the PR2 mobile basis purposelessly moving. This is the case of RRT-connect 
+algorithm (left). Path optimization is expected to remove unnecessary motions. 
+The popular random shortcut algorithm fails in this case (middle). Our algorithm 
+succeeds (right).}
+	\label{pr2_final}
+\end{figure}
 
 % analysis PR2 alone:
 In the example presented Figure~\ref{pr2_final} and in the video, the mobile 
