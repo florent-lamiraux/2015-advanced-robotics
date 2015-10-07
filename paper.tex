@@ -461,17 +461,6 @@ for any later iteration $\xx_j$, $j\geq i+1$.
 We refer to~\cite{nocedal2006numerical} for solving constrained quadratic 
 programs (QP). This corresponds to \texttt{computeIterate} in Algorithm~\ref{algo:gradient}.
 
-\subsection{Relinearization of constraints}
-
-As constraint~(\ref{eq:non-linear constraint}) is not exactly enforced, but linearized, a new collision may appear at $\tcolli$ on a later iteration between
-$\body_1$ and $\body_2$. To avoid this undesired effect, we check the values of all the
-constraints at each iteration. The constraints that fail to satisfy
-Property~\ref{prop:collision free} are relinearized around the latest valid path $\xx_k$, $ k > i+1$, as follows:
-$$
-\frac{\partial F}{\partial \xx}(\xx_k)(\xx -\xx_k) = -F(\xx_k)
-$$
-This step is performed by \texttt{solveConstraints} in Algorithm~\ref{algo:gradient}.
-
 
 \subsection{Algorithm}
 
@@ -514,8 +503,6 @@ risks of collision.
 Each time a collision-constraint is added, 
 the solution of the current QP is tested (i.e. $\alpha = 1$). If this path is collision-free, the algorithm returns it as the solution. Otherwise, 
 smaller steps are iteratively applied and tested toward the minimum, and constraints are added each time a collision is found.
-
-If the constraint relinearization fails to validate Property~\ref{prop:collision free}, $\alpha$ is halved and the algorithm restarts from the latest valid path.
 
 
 \section{RESULTS}
