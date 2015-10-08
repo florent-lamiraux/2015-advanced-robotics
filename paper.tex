@@ -49,7 +49,7 @@
 \newcommand\weight{W}
 \newcommand\translation{\mathbf{t}}
 \newcommand\tcolli{t_{coll\ i}}
-
+\newcommand\po{\mathbf{po}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{document}
@@ -215,7 +215,8 @@ robot geometry by spheres.
 Some heuristics use random shortcuts on the initial guess combined with a 
 trajectory re-building that returns ${C}^1$ shortcuts made of parabolas and lines 
 (bang-bang control)~\cite{HauserFastSmooth}. These local refined trajectories 
-are time-optimal since they comply with acceleration and velocity constraints. 
+are time-optimal since they comply with acceleration and velocity constraints. ~\cite{Guernane2011}, also based on random shooting, is guiding configuration-generation with local holonimic considerations. But this method remains only locally optimal, and is not addressing high-DOF problems.
+~\cite{Geraerts04clearancebased}, whereas just implemented for freeflyer robots, is using medial axis retractation for clearance and a partial random shortcut (applied only on random DOF) which can address the problem of ~\ref{decoupled_DOF_optimization} but has longer computation time and is not using the information returned by the checker of which links are colliding to guide which DOF to choose for the partial shortcut.
 
 In some way, our method shares similarities with~\cite{PanSmoothSplineShort} 
 since this latter method relies on collision checking and backtracks when an 
@@ -224,11 +225,6 @@ distance constraints. Unlike our method however, the iterations are composed of
 Cubic-B-splines. The benefit of this method is that the result is a 
 differentiable path.
 
-TO DESCRIBE:
-
-~\cite{Guernane2011} (guiding shoots) is ``locally optimal'', not addressing high-DOF problems, 
-
-~\cite{Geraerts04clearancebased}, whereas just implemented for freeflyer robots, is using medial axis retractation for clearance and a partial random shortcut (applied only on random DOF) which can address the problem of ~\ref{decoupled_DOF_optimization} but has longer computation time and is not using the information returned by the checker of which links are colliding to guide the shortcut.
 
 
 \section{PATH OPTIMIZATION} \label{section:path_optim}
@@ -389,9 +385,9 @@ paths and to return the first colliding configuration along a path. This step co
 
 \subsection{Constraints}
 
-\begin{figure}[b]
+\begin{figure}[t]
 	\centering
-	\includegraphics[width=8cm]{optim_grad.pdf}
+	\includegraphics[width=9cm]{optim_grad.pdf}
 	\caption{Illustration of one iteration of our optimization. $\xx_{i+1}$ 
 	appears 
 	to be in collision with the obstacle, the first colliding configuration 
@@ -412,40 +408,43 @@ detected. Two cases are possible:
 \item the collision occurred between a body of the robot $\body_1$ and the 
 environment.
 \end{enumerate}
-In the rest of this section, we will only consider the first case. Reasoning about the second case is similar, except that the 
-constraint is on the transformation of $\body_1$ with respect to the environment.
+In the rest of this section, we will only consider the first case. Reasoning 
+about the second case is similar, except that the 
+constraint is on the position of $\body_1$ with respect to the environment.
 
-\begin {figure}
-  \centerline {
-    \def\svgwidth {\linewidth}
-    \graphicspath {{./images/}}
-    \input {images/transformation-constraint.pdf_tex}
-  }
-  \caption {Transformation constraint notations.}
-  \label{fig:transformation-constraint}
-\end {figure}
-Let $M^{*}\in SE(3)$ denote the homogeneous transformation between frames of $\body_1$  and $\body_2$ in configuration $\xx_i(\tcolli)$. Let $M\in SE(3)$ denote the same transformation in configuration $\xx (\tcolli)$ where $\xx$ is any path in $\CS^{wp}$. Let $R\in SO(3)$ (resp. $R^{*}$) and $\translation\in\real^3$ (resp. $\translation^{*}$) be the rotation and translation parts of $M$ (resp. $M^{*}$).
-See also Figure~\ref{fig:transformation-constraint} for notations.
+\begin{figure}[b]
+	\centering
+	\includegraphics[width=15cm]{contact-points.pdf}
+	\caption{Constraint definition based on contact points.}
+	\label{contact-points}
+\end{figure}
 
-We denote by $F$ the mapping from $\CS^{wp}$ to $\real^6$ defined by
+The principle of the method is to compute a constraint on the backtracked free-
+configuration $\xx_{i}(\tcolli)$ to avoid the encountered collision $\xx_{i+1}
+(\tcolli)$. To handle this, we introduce a one-dimensional constraint based on the 
+orthogonal direction of the encountered collision.
+
+In the collision-configuration $\xx_{i+1}(\tcolli)$, let $\po_c\in \real^3$ be the 
+contact point expressed in the global frame ${\cal R}_0$ of each of the two 
+bodies. We compute (see Figure~\ref{contact-points}) the associated points $\po_1$ 
+and $\po_2$ in the free-configuration $\xx_{i}(\tcolli)$, and thus 
+$\mathbf{u}=\po_2-\po_1$.
+
+
+Let $\translation^{*}\in \real^3$ denotes the position between frames of $\body_1$  
+and $\body_2$ in configuration $\xx_i(\tcolli)$. Let $\translation \in 
+\real^3$ (resp. $R\in SO(3)$) denote the same position (resp. rotation) in 
+configuration $\xx (\tcolli)$ where $\xx$ is any path in $\CS^{wp}$.
+
+We denote by $F$ the mapping from $\CS^{wp}$ to $\real$ defined by
 \begin{equation}\label{eq:constraint}
-F (\xx) = \left(\begin{array}{c} R^T (\translation^{*} - \translation) \\
-  \log (R^T R^{*})\end{array}\right)
+F (\xx) =  \mathbf{u}^T \, R^T (\translation^{*} - \translation)
 \end{equation}
-$\log (R^T R^{*})$ represents here a vector $\mathbf{v}$ of $\real^3$ such that
-$R^T R^{*}$ is the rotation of axis $\mathbf{v}$ and of angle $\|\mathbf{v}\|$.
 Note that $F$ vanishes for any path $\xx$ such that in configuration
-$\xx(\tcolli)$ the relative position of $\body_2$ w.r.t. $\body_1$ is equal to $M^{*}$.
-Let $r$ denotes the \textit{radius} of the bounding sphere of $\body_2$ centered at the origin of $\body_2$ local frame. Let us denote by $d$ the minimal distance between $\body_1$ and $\body_2$
-in configuration $\xx_i(\tcolli)$. We have the following property.
-\begin {property} \label {prop:collision free}
-Let $\xx\in\CS^{wp}$ be a path and let us denote by $\translation$ and $\mathbf{v}$ respectively the 3 first coordinates and the 3 last coordinates of $F(\xx)$. If
-$$
-\|\translation\| + r \|\mathbf{v}\| \leq d
-$$
-then in configuration $\xx(\tcolli)$, $\body_1$ and $\body_2$ are collision-free.
-\end {property}
-The proof is straightforward: expressed in reference frame of $\body_1$, the motion of $\body_2$ between configurations $\xx(\tcolli)$ and $\xx_i(\tcolli)$ is a translation of vector $\translation$ followed by a rotation of angle $\|\mathbf{v}\|$. No point of $\body_2$ has moved by more than $\|\translation\| + r \|\mathbf{v}\|$. Therefore no collision is possible.
+$\xx(\tcolli)$ the relative position of $\body_2$ w.r.t. $\body_1$ is equal to $
+\translation^{*}$ or if the relative position $\translation^{*} - \translation$ is 
+orthogonal to $\mathbf{u}$.
+
 
 When a collision is detected at $\tcolli$ along path $\xx_{i+1}$, we wish to add
 constraint
@@ -458,8 +457,31 @@ $$
 $$
 for any later iteration $\xx_j$, $j\geq i+1$.
 
-We refer to~\cite{nocedal2006numerical} for solving constrained quadratic 
-programs (QP). This corresponds to \texttt{computeIterate} in Algorithm~\ref{algo:gradient}.
+\vspace{0.2cm}
+
+Let $q_{k\,i}$ denotes waypoint $k$ along path $x_i$.
+The constraint on the position at $t_{coll\,i}$ is a function that depends only
+on two waypoints $q_{k\,i}$, $q_{k+1\,i}$, with $0\leq k\leq n$. There exists 
+$\beta\in[0,1]$ such that for any $j$:
+$$
+\xx_j (t_{coll\,i}) = (1-\beta) \conf_{k\,j} + \beta \conf_{k+1\,j}
+$$
+Therefore, the Jacobian $J_F$ of constraint~(\ref{eq:constraint}) with respect to 
+$x$ is
+$$
+J_F = \left(\begin{array}{cccccc}
+0 & \cdots & (1-\beta)\frac{\partial F}{\partial q} (\xx_j(t_{coll\,i})) &
+\beta\frac{\partial F}{\partial q} (\xx_j(t_{coll\,i})) & \cdots & 0
+\end{array}
+\right)
+$$
+Both $F$ and $\frac{\partial F}{\partial q}$ are provided by our path planning framework~\cite{hpp} as differentiable functions.
+
+\vspace{0.2cm}
+
+Each time a new constraint is added to the resolution, we stack its jacobian $J_F$ to the previous ones. This corresponds to \texttt{addCollisionConstraints} in 
+Algorithm~\ref{algo:gradient}. Then we refer to~\cite{nocedal2006numerical} for solving constrained quadratic programs (QP) (function \texttt{computeIterate} in 
+Algorithm~\ref{algo:gradient}).
 
 
 \subsection{Algorithm}
