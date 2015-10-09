@@ -57,8 +57,6 @@
 
 \jvol{00} \jnum{00} \jyear{2013} \jmonth{January}
 
-\articletype{GUIDE}
-
 \title{{\itshape Advanced Robotics} A simple path optimization method for motion planning }	
 
 \author{Myl\`{e}ne Campana$^{a,b}$ $^{\ast}$ \thanks{$^\ast$Corresponding author. Email: mcampana@laas.fr}, Florent Lamiraux$^{a,b}$ and Jean-Paul Laumond$^{a,b}$
@@ -73,7 +71,7 @@ Most algorithms in probabilistic sampling-based path planning compute
 collision-free paths made of straight line segments lying in the configuration 
 space. Due
 to the randomness of sampling, the paths make detours that need to be optimized.
-The contribution of this paper is to propose a gradient-based algorithm that
+The contribution of this paper is to propose a gradient-based (GB) algorithm that
 transforms a polygonal collision-free path into a shorter one, while both:
 \begin{itemize}
 \item requiring mainly collision checking, and few time-consuming obstacle 
@@ -124,10 +122,14 @@ planning step. Note that we do not address path planning, but that we take the
 result of a probabilistic motion planner as the input to our path optimization 
 method.
 
-For this shortening purpose, random shortcut methods are
-still very popular~\cite{Sekhavat-Svestka1998,HauserFastSmooth}. However, random 
-shortcut requires fine tuning of the termination condition (see 
-Algorithm~\ref{algo:random-shortcut}) and is no efficient due to randomness for long trajectories where only a small part needs to be optimized. Figure~\ref{decoupled_DOF_optimization} presents another situation where random shortcut will always fail to optimize the initial path, since it cannot decouple the robot degrees of freedom (DOF) on which the optimization occurs, contrary to our algorithm.
+For this shortening purpose, random shortcut (RS) methods are
+still very popular~\cite{Sekhavat-Svestka1998,HauserFastSmooth}. However, RS requires fine tuning of the termination condition (see 
+Algorithm~\ref{algo:random-shortcut}) and is no efficient due to randomness for long 
+trajectories where only a small part needs to be optimized. 
+Figure~\ref{decoupled_DOF_optimization} presents another situation where RS will 
+always fail to optimize the initial path, since it cannot decouple the 
+robot degrees of freedom (DOF) on which the optimization occurs, contrary to our 
+algorithm or partial random shortcut (PRS) methods~\cite{Geraerts04clearancebased} that shortcut only one or a group of DOF.
 
 \begin{figure}[H]
 	\centering
@@ -215,8 +217,15 @@ robot geometry by spheres.
 Some heuristics use random shortcuts on the initial guess combined with a 
 trajectory re-building that returns ${C}^1$ shortcuts made of parabolas and lines 
 (bang-bang control)~\cite{HauserFastSmooth}. These local refined trajectories 
-are time-optimal since they comply with acceleration and velocity constraints. ~\cite{Guernane2011}, also based on random shooting, is guiding configuration-generation with local holonimic considerations. But this method remains only locally optimal, and is not addressing high-DOF problems.
-~\cite{Geraerts04clearancebased}, whereas just implemented for freeflyer robots, is using medial axis retractation for clearance and a partial random shortcut (applied only on random DOF) which can address the problem of ~\ref{decoupled_DOF_optimization} but has longer computation time and is not using the information returned by the checker of which links are colliding to guide which DOF to choose for the partial shortcut.
+are time-optimal since they comply with acceleration and velocity constraints. 
+~\cite{Guernane2011}, also based on random shooting, is guiding configuration-
+generation with local holonimic considerations. But this method remains only locally 
+optimal, and is not addressing high-DOF problems.
+~\cite{Geraerts04clearancebased}, whereas just implemented for freeflyer robots, is 
+using medial axis retractation for clearance and a PRS (applied only on random DOF) 
+which can address the problem of ~\ref{decoupled_DOF_optimization} but has longer 
+computation time and is not using the information returned by the checker of which 
+links are colliding to guide which DOF to choose for the PRS.
 
 In some way, our method shares similarities with~\cite{PanSmoothSplineShort} 
 since this latter method relies on collision checking and backtracks when an 
@@ -338,7 +347,7 @@ w_1 I_{p_1}       &        &  0  \\
 \end{array}\right)
 $$
 where $I_{p_i}$ is the identity matrix of size $p_i$ and $w_i$ is the weight 
-associated to joint $J_i$. We define the length of the straight interpolation 
+associated to the lever arm of the joint $J_i$. We define the length of the straight interpolation 
 between two configurations as:
 $$
 \|\conf_2 - \conf_1\|_{W} \triangleq \sqrt{(\conf_2 - \conf_1)^T W^2 (\conf_2 - 
@@ -427,8 +436,8 @@ orthogonal direction of the encountered collision.
 In the collision-configuration $\xx_{i+1}(\tcolli)$, let $\po_c\in \real^3$ be the 
 contact point expressed in the global frame ${\cal R}_0$ of each of the two 
 bodies. We compute (see Figure~\ref{contact-points}) the associated points $\po_1$ 
-and $\po_2$ in the free-configuration $\xx_{i}(\tcolli)$, and thus 
-$\mathbf{u}=\po_2-\po_1$.
+and $\po_2$ in the free-configuration $\xx_{i}(\tcolli)$, and the difference 
+$\mathbf{u}=\po_2-\po_1$ which will be used as the orthogonal direction the bodies can not move along at the path parameter $\tcolli$.
 
 
 Let $\translation^{*}\in \real^3$ denotes the position between frames of $\body_1$  
@@ -436,9 +445,9 @@ and $\body_2$ in configuration $\xx_i(\tcolli)$. Let $\translation \in
 \real^3$ (resp. $R\in SO(3)$) denote the same position (resp. rotation) in 
 configuration $\xx (\tcolli)$ where $\xx$ is any path in $\CS^{wp}$.
 
-We denote by $F$ the mapping from $\CS^{wp}$ to $\real$ defined by
+We denote by $F$ the mapping from $\CS^{wp}$ to $\real^3$ defined by
 \begin{equation}\label{eq:constraint}
-F (\xx) =  \mathbf{u}^T \, R^T (\translation^{*} - \translation)
+F (\xx) =  R^T (\translation^{*} - \translation)
 \end{equation}
 Note that $F$ vanishes for any path $\xx$ such that in configuration
 $\xx(\tcolli)$ the relative position of $\body_2$ w.r.t. $\body_1$ is equal to $
@@ -470,8 +479,8 @@ Therefore, the Jacobian $J_F$ of constraint~(\ref{eq:constraint}) with respect t
 $x$ is
 $$
 J_F = \left(\begin{array}{cccccc}
-0 & \cdots & (1-\beta)\frac{\partial F}{\partial q} (\xx_j(t_{coll\,i})) &
-\beta\frac{\partial F}{\partial q} (\xx_j(t_{coll\,i})) & \cdots & 0
+0 & \cdots & (1-\beta)\,\mathbf{u}^T \frac{\partial F}{\partial q} (\xx_j(t_{coll\,i})) & \
+\beta\,\mathbf{u}^T \frac{\partial F}{\partial q} (\xx_j(t_{coll\,i})) & \cdots & 0
 \end{array}
 \right)
 $$
@@ -483,10 +492,16 @@ Each time a new constraint is added to the resolution, we stack its jacobian $J_
 Algorithm~\ref{algo:gradient}. Then we refer to~\cite{nocedal2006numerical} for solving constrained quadratic programs (QP) (function \texttt{computeIterate} in 
 Algorithm~\ref{algo:gradient}).
 
+%The solution step is given by:
+%$$
+%\mathbf{\pii}^{*} = -V_0(V_0^TH V_0)^{-1}\,V_0^T\nabla c(\xx_i)
+%$$
+%where $V_0$ is the base of the nullspace of the stack of $J_F$ jacobians.
+
 
 \subsection{Algorithm}
 
-In this part we describe the path-optimizer Algorithm~\ref{algo:gradient} 
+In this part we describe the GB path-optimizer Algorithm~\ref{algo:gradient} 
 according to the previous step definitions. The main difficulty here is to handle 
 the scalar parameter $\alpha$ determining how much of the computed step $\p$ will 
 be traveled through, and also to return a collision-free path. Typically, we 
@@ -519,7 +534,7 @@ risks of collision.
 	\Return $\xx_0$
 \EndProcedure
 \end{algorithmic}
-\caption{Gradient-based path-optimization.} \label{algo:gradient}
+\caption{Gradient-based (GB) path-optimization.} \label{algo:gradient}
 \end{algorithm}
 
 Each time a collision-constraint is added, 
@@ -562,9 +577,9 @@ compute the corresponding collisions, constraints will be chosen on a very-not
 optimal path and will not be pertinent w.r.t. the obstacles we wanted to 
 avoid.
 
-Figure~\ref{2D_long} illustrates a path example that random shortcut will not manage to 
+Figure~\ref{2D_long} illustrates a \textit{very long} path example that RS or PRS will not manage to 
 optimize in an affordable time, because of probabilistically failing to sample 
-configurations in the box. Our gradient-based algorithm succeeds to optimize the 
+configurations in the box. GB succeeds to optimize the 
 path contained in the box, with the following cost coefficients 
 $$
 \lambda_{i-1} = \frac{1}{\sqrt{(\conf_{i\,0}-\conf_{i-1\,0})^T \weight^2 
@@ -588,6 +603,21 @@ examples presented in this paper.
 	succeeds (in blue).}
 	\label{local_box_optim}
 \end{figure}
+
+
+
+\subsection{To 3D complex problems}
+
+We also experiment our algorithm on more complex robots, with transformation 
+collision-constraints. Unless another value is given, $\alpha_{init}$ is set to 0.2.
+
+%\begin{figure}[b]
+%	\centering
+%	\includegraphics[width=5cm,height=3.5cm]{ur5_v2.png}
+%	\caption{6-DOF robot arm on which our path-optimization has been tested.}
+%	\label{ur5}
+%\end{figure}
+
 
 \begin{algorithm}
 \begin{algorithmic}[1] % line numerotation
@@ -632,74 +662,67 @@ $maxNbFailures$ is a parameter that affects time of computation and quality of
 the result.}\label{algo:random-shortcut}
 \end{algorithm}
 
-\subsection{To 3D complex problems}
+\begin{figure}[b]
+	\centering
+	\includegraphics[height=4.9cm,width=1.8cm]{pr2_initial_final_vertical.png}
+	\includegraphics[width=5.7cm]{p0_pr2_alone_merged3.png}
+	\includegraphics[height=4.9cm]{p1RS_pr2_alone_merged3.png}
+	\includegraphics[height=4.9cm]{p1GB_pr2_alone_merged3.png}\\
+	\caption{PR2-crossing-arms example. In this motion planning problem, PR2 robot 
+	has just to 
+exchange the positions of its arms. The task is simple, however, in absence of 
+explicit indication, any probabilistic motion planner will compute a path that 
+makes the PR2 mobile basis purposelessly moving. This is the case of RRT-connect 
+algorithm (left). Path optimization is expected to remove unnecessary motions. 
+The popular RS algorithm fails in this case (middle). Our GB algorithm 
+succeeds (right).}
+	\label{pr2_final}
+\end{figure}
 
-We also experiment our algorithm on more complex robots, with transformation 
-collision-constraints. Unless another value is given, $\alpha_{init}$ is set to 0.2.
-
-%\begin{figure}[b]
-%	\centering
-%	\includegraphics[width=5cm,height=3.5cm]{ur5_v2.png}
-%	\caption{6-DOF robot arm on which our path-optimization has been tested.}
-%	\label{ur5}
-%\end{figure}
-
-
-In the included video, we present four situations where our algorithm has been 
-% TODO puzzle if included => 5 situations
-tested and compared to random shortcut~\cite{randomShortcutHPP}
-(Algorithm~\ref{algo:random-shortcut}).
-The termination condition of random shortcut allows it to try 
+In the included video, we present multiple situations where the GB algorithm has 
+been tested and compared to RS~\cite{randomShortcutHPP}
+(Algorithm~\ref{algo:random-shortcut}) and PRS ~\cite{partialrandomShortcutHPP} 
+adapted from~\cite{Geraerts04clearancebased}.
+The termination condition of RS allows it to try 
 shortening the path until 5 iterations of non-improvement are reached 
 (corresponding to $maxNbFailures$ in Algorithm~\ref{algo:random-shortcut}).
+For PRS, first a shortcut is tried on each DOF between $\conf_0$ and $\conf_{n+1}$. Then, for each DOF, configurations are shot as in Algorithm~\ref{algo:random-shortcut} and the steering-method returns a path made by an interpolation on only the current DOF and the previous subpath for other DOF. If this path is collision-free, it is replaced as in RS. This process is also stopped when 5 iterations of non-improvement are reached.
+
 %But we admit that restrincting the number of random shortcut iterations is 
 %neither a acceptable criterion because of randomness.
 %We also discuss the good properties and limits of our algorithm.
 
 % analysis UR2:
-On the 5-DOF double-arm problem, one arm has to get around an obstacle while the 
+On the double-arm problem (see Figure~\ref{trajectories} top-right), one arm has to get around an obstacle while the 
 other is relatively far from obstacles. As expected, the initial path given by 
-RRT-connect activates both arms to solve the problem. Contrary to random shortcut, 
-our optimizer manages to cancel the rotation of the free-arm while optimizing the 
-first arm motion. Initial path length 5.17 has been decreased to 4.55 by random shortcut and to 3.20 by the gradient-based optimizer.
+RRT-connect activates both arms to solve the problem. Contrary to RS, 
+GB manages to cancel the rotation of the free-arm while optimizing the 
+first arm motion. Initial path length 5.17 has been decreased to 4.55 by RS and to 3.20 by GB.
 
 
 % analysis UR5:
-For the following example with a 6-axis manipulator arm 
+For the following example with a 6-axis manipulator arm (see Figure~\ref{trajectories} bottom-left)
 %(Figure~\ref{ur5})
 in a  cluttered environment, path reduction only manages to reduce some but not 
 all detours. This behavior can be explained by a path over-constraining due to the 
 important proximity of the robot to the obstacles during the whole path, and 
 because there are not so many DOF to play on to easily avoid collisions and 
 return a small-cost solution.
-We advance this explanation because on the two following high-DOF examples of the video (and Figure~\ref{pr2_final}), results are better 
+We advance this explanation because on the two following high-DOF examples of the 
+video (and Figure~\ref{pr2_final}), results are better 
 in terms of path length and quality.
 
-\begin{figure}[H]
-	\centering
-	\includegraphics[height=4.9cm,width=1.8cm]{pr2_initial_final_vertical.png}
-	\includegraphics[width=5.7cm]{p0_pr2_alone_merged3.png}
-	\includegraphics[height=4.9cm]{p1RS_pr2_alone_merged3.png}
-	\includegraphics[height=4.9cm]{p1GB_pr2_alone_merged3.png}\\
-	\caption{In this motion planning problem, PR2 robot has just to 
-exchange the positions of its arms. The task is simple, however, in absence of 
-explicit indication, any probabilistic motion planner will compute a path that 
-makes the PR2 mobile basis purposelessly moving. This is the case of RRT-connect 
-algorithm (left). Path optimization is expected to remove unnecessary motions. 
-The popular random shortcut algorithm fails in this case (middle). Our algorithm 
-succeeds (right).}
-	\label{pr2_final}
-\end{figure}
+
 
 % analysis PR2 alone:
 In the example presented Figure~\ref{pr2_final} and in the video, the mobile 
 40-DOF PR2 simply has to cross its arms from 
 the left arm up position to the right arm up one. Lengths of the initial path, the 
-random shortcut optimized path and the gradient-based optimized path are 
+RS optimized path and the GB optimized path are 
 respectively 14.5, 6.34 and 3.62. The RRT-connect planner 
 returns detours and activates non-useful DOF such as the head, the torso lift 
 and the translation on 
-the ground. Once again, random shortcut will hardly optimize the mobile base 
+the ground. Once again, RS will hardly optimize the mobile base 
 translation of the robot and other unnecessary DOF uses, unlike our 
 optimized-path which mainly results in moving the arms as expected 
 (Figure~\ref{pr2_final} right).
@@ -717,32 +740,94 @@ planner and improves the path quality
 just adding transformation constraints between the table and the 
 robot's arms and grippers. Thus, the robot just slightly moves 
 backward and uses its arm DOF to avoid the table, instead of 
-processing a large motion to get away from the table. With our method, the path length is downed to 4.59, against 8.24 for random shortcut.
+processing a large motion to get away from the table. With GB, the path length is downed to 4.59, against 8.24 for RS.
 
-Optimization computation time and path length averages are presented for 30 runs of the PR2-crossing-arms in the Table~\ref{tab:results}. In the same way, time computation averages for the PR2-in-kitchen example have been 
-calculated: $59.5\,\text{s}$ (gradient-based optimizer) and $76.2\,\text{s}$ (random shortcut).
+Optimization computation time and path length averages are presented for 30 runs of 
+the PR2-crossing-arms in the Table~\ref{tab:results}. In the same way, time 
+computation averages for the PR2-in-kitchen example have been 
+calculated: $59.5\,\text{s}$ (GB) and $76.2\,\text{s}$ (RS).
 Thus our method presents 
-similar computation times and path lengths for mobile manipulation tasks. However, the extinction of the mobile base motion in the gradient-based optimized path is advanced in the right column of Table~\ref{tab:results}. Thus the problem addressed 
+similar computation times and path lengths for mobile manipulation tasks. However, 
+the extinction of the mobile base motion in the gradient-based optimized path is 
+advanced in the right column of Table~\ref{tab:results}. Thus the problem addressed 
 Figure~\ref{decoupled_DOF_optimization} is solved considering this DOF.
 
 
-\begin{table}[t]
+
+
+\begin{figure}[t]
+	\centering
+	\includegraphics[width=7.0cm,height=6.8cm]{pr2_orth_constr_results.png}
+	\includegraphics[width=7.0cm,height=6.8cm]{ur2_orth_constr_results.png}\\
+	\vspace{0.05cm}
+	\includegraphics[width=7.0cm,height=6.3cm]{ur5sph_orth_constr_results.png}
+	\includegraphics[width=7.0cm,height=6.3cm]{puzzle_orth_constr_results.png}
+	\caption{Trajectories of wrists, end-effectors or center allong different paths: the initial path is represented in red, the RS optimized path in blue and the GB optimized path ($\alpha_{init}=0.1$) in green. For the freeflyer puzzle (bottom right), points $\po_1$, $\po_2$ and vectors $\mathbf{u}$ for constraints computation are also shown in grey and red.}
+	\label{trajectories}
+\end{figure}
+
+Trajectories results of the robots end-effectors or center are presented 
+Figure\ref{trajectories}.
+
+DESCRIBE TRAJECTORIES
+
+
+
+\begin{table}
 \centering
-  \begin{tabular}{cccc}
-  \\
+\scalebox{0.9}{
+  \begin{tabular}{cccccc}
   \toprule
-     & Computation & Path  & Traveled distance\\
-     & time & length & by the base\\
+    \textbf{Problem} & Path obtained from & Computation time  & Path length & Cost & Base traveled distance\\
     \midrule
     \midrule
-    Initial &  & $13.7$ & $10.9$\\
-    Gradient-based & $\,781\text{ms}$ & $3.69$ & $10^{-6}$\\
-    Random shortcut & $\,823\text{ms}$ & $3.82$ & $2.94$\\
+    & Initial &  & $14.3$ & $ $ &\\
+    \textbf{Freeflyer-} & GB & $\,\text{ms}$ & $ $ & $ $ &\\
+    \textbf{puzzle} & PRS & $6.53\,\text{ms}$ & $14.3$ & $ $ &\\
+    & RS & $68.3\,\text{ms}$ & $6.05$ & $ $ &\\
+    \midrule
+    & Initial &  & $11.3$ & $ $ &\\
+    \textbf{Double-arm} & GB & $318\,\text{ms}$ & $4.95$ & $ $ &\\
+    \textbf{5-DOF} & PRS & $8.42\,\text{ms}$ & $8.73$ & $ $ &\\
+    & RS & $61.9\,\text{ms}$ & $6.96$ & $ $ &\\
+    \midrule
+    & Initial &  & $10.8$ & $ $ & $8.03$\,\text{m}\\
+    \textbf{PR2-crossing-} & GB & $24.8\,\text{s}$ & $1.90$ & $ $ & $10^{-7}\,\text{m}$\\
+    \textbf{arms} & PRS & $41.1\,\text{s}$ & $ 4.73$ & $ $ & $0\,\text{m}$\\
+    & RS & $31.5\,\text{s}$ & $1.60$ & $ $ & $2.70\,\text{m}$\\
+    \midrule
+    & Initial &  & $ $ & $ $ &\\
+    \textbf{PR2-in-} & GB & $\,\text{s}$ & $ $ & $ $ &\\
+    \textbf{kitchen} & PRS & $\,\text{s}$ & $ $ & $ $ &\\
+    & RS & $\,\text{s}$ & $ $ & $ $ &\\
+    \midrule
+    & Initial &  & $ $ & $ $ &\\
+    \textbf{6-DOF-arm-} & GB & $\,\text{s}$ & $ $ & $ $ &\\
+    \textbf{with-spheres} & PRS & $\,\text{s}$ & $ $ & $ $ &\\
+    & RS & $\,\text{s}$ & $ $ & $ $ &\\
+    \midrule
+    & Initial &  & $ $ & $ $ &\\
+    \textbf{6-DOF-arm-} & GB & $\,\text{s}$ & $ $ & $ $ &\\
+    \textbf{through-window} & PRS & $\,\text{s}$ & $  $ & $ $ &\\
+    & RS &  $\,\text{s}$ & $ $ & $ $ &\\
+    \midrule
+    & Initial &  & $19.0$ & $ $ &\\
+    \textbf{Baxter-in-} & GB & $2449\,\text{s}$ & $5.85$ & $ $ &\\
+    \textbf{office} & PRS & $638\,\text{s}$ & $17.5$ & $ $ &\\
+    & RS & $139\,\text{s}$ & $13.3$ & $ $ &\\
     \bottomrule
   \end{tabular}
-\caption {Results for 30 runs of the PR2-crossing-arms example. For each run, a solution path is planned by Visibility-PRM as initial guess for each optimizer. $\alpha_{init}$ is set to 0.2. The right column represents the distance that is traveled by the robot mobile base during the path.}
+  }%scalebox
+\caption{Average results for 30 runs of several examples presented in the paper or 
+the video. For each run, a solution path is planned by Visibility-PRM as initial 
+guess for each optimizer. $\alpha_{init}$ is set to 0.1.
+For the PR2-crossing-arms example only, the right column represents the 
+distance that is traveled by the robot mobile base during the different paths.
+}
 \label{tab:results}
 \end{table}
+
+
 
 \section{CONCLUSIONS}
 We managed to settle a path optimization for decoupled-DOF robots such as mobile 
@@ -757,7 +842,8 @@ for high-DOF robots, removing unnecessary DOF motions. Our optimizer also manage
 to reduce a local detour in a long path while random shortcut methods will mostly 
 fail.
 
-The experimental results show that transformation constraints may in some cases be overconstraining. We also tried distance constraints without much success due to the non-continuous differentiability of distance. In a future work, we will study other one-dimensional constraints in order to achieve better results.
+FUTURE WORK
+
 
 \bibliographystyle{tADR} % plain, alpha, abbr, unsrt
 \bibliography{paper}
