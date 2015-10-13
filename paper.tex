@@ -55,7 +55,7 @@
 \begin{document}
 \graphicspath{{images/}}
 
-\jvol{00} \jnum{00} \jyear{2013} \jmonth{January}
+\jvol{00} \jnum{00} \jyear{2015} \jmonth{October}
 
 \title{{\itshape Advanced Robotics} A simple path optimization method for motion planning }	
 
@@ -123,13 +123,17 @@ result of a probabilistic motion planner as the input to our path optimization
 method.
 
 For this shortening purpose, random shortcut (RS) methods are
-still very popular~\cite{Sekhavat-Svestka1998,HauserFastSmooth}. However, RS requires fine tuning of the termination condition (see 
+still very 
+popular~\cite{Sekhavat-Svestka1998,Geraerts04clearancebased,HauserFastSmooth}. 
+However, RS requires fine 
+tuning of the termination condition (see 
 Algorithm~\ref{algo:random-shortcut}) and is no efficient due to randomness for long 
 trajectories where only a small part needs to be optimized. 
 Figure~\ref{decoupled_DOF_optimization} presents another situation where RS will 
 always fail to optimize the initial path, since it cannot decouple the 
 robot degrees of freedom (DOF) on which the optimization occurs, contrary to our 
-algorithm or partial random shortcut (PRS) methods~\cite{Geraerts04clearancebased} that shortcut only one or a group of DOF.
+algorithm or partial random shortcut (PRS) methods~\cite{Geraerts04clearancebased} 
+that shortcut only one or a group of DOF.
 
 \begin{figure}[H]
 	\centering
@@ -161,10 +165,13 @@ the simplicity of “blind” methods like shortcut algorithm,
 and the complexity of distance based optimization techniques.
 The method iteratively shortens the initial path with gradient-based information.
 When a collision is detected at a given iteration, the method backtracks to the
-latest valid iteration and inserts a linearized transformation constraint
-between the objects detected in collision. Only few distances between objects are evaluated, therefore no pre-processing of the
-robot or environment models is necessary. The underlying optimization
-algorithm is a quadratic program.
+latest valid iteration and inserts a one-dimensional constraint
+between the objects detected in collision. Only collisions between objects are 
+evaluated, therefore no pre-processing of the
+robot or environment models is necessary to increase distance computation speed. 
+Preserving the problem geometry also 
+guarantees that a solution can still be found, e.g. for narrow passages as holes or 
+grippers. The underlying optimization algorithm is a quadratic program.
 
 Related work is presented in Section II. Section III explains how the 
 path-optimizer works, from the formulation of the problem to the implemented
@@ -223,16 +230,22 @@ generation with local holonimic considerations. But this method remains only loc
 optimal, and is not addressing high-DOF problems.
 ~\cite{Geraerts04clearancebased}, whereas just implemented for freeflyer robots, is 
 using medial axis retractation for clearance and a PRS (applied only on random DOF) 
-which can address the problem of ~\ref{decoupled_DOF_optimization} but has longer 
-computation time and is not using the information returned by the checker of which 
-links are colliding to guide which DOF to choose for the PRS.
+which can address the problem of Figure~\ref{decoupled_DOF_optimization} but is 
+relatively slower than RS. Moreover, PRS is not using the information returned by 
+the checker of which links are colliding to guide which DOF or group of DOF are 
+relevant to shortcut, contrary to our method.
 
 In some way, our method shares similarities with~\cite{PanSmoothSplineShort} 
 since this latter method relies on collision checking and backtracks when an 
 iteration is detected in collision, instead of trying to constantly satisfy 
-distance constraints. Unlike our method however, the iterations are composed of 
-Cubic-B-splines. The benefit of this method is that the result is a 
-differentiable path.
+distance constraints. Unlike our method however, interpolating configuration -which 
+can be viewed as constraints- are freezing the whole robot configuration instead of 
+a relevant subpart. Thus, this method cannot solve the 
+Figure~\ref{decoupled_DOF_optimization} problem.
+
+%Unlike our method however, the iterations are composed of 
+%Cubic-B-splines. The benefit of this method is that the result is a 
+%differentiable path.
 
 
 
@@ -424,7 +437,12 @@ constraint is on the position of $\body_1$ with respect to the environment.
 \begin{figure}[b]
 	\centering
 	\includegraphics[width=15cm]{contact-points.pdf}
-	\caption{Constraint definition based on contact points.}
+	\caption{Bodies representation in collision-configuration (left) and 
+	backtracked free-configuration (right). A contact point (i.e. any point in 
+	the intersection of the bodies) $\po_c$ can be returned by the Flexible 
+	Collision Library~\cite{fcl}, used to detect collisions. The red $(\perp)$ 
+	line is orthogonal to ($\po_2$,$\mathbf{u}$) and represents the motion 
+	direction which is allowed by the constraint.}
 	\label{contact-points}
 \end{figure}
 
@@ -433,26 +451,38 @@ configuration $\xx_{i}(\tcolli)$ to avoid the encountered collision $\xx_{i+1}
 (\tcolli)$. To handle this, we introduce a one-dimensional constraint based on the 
 orthogonal direction of the encountered collision.
 
-In the collision-configuration $\xx_{i+1}(\tcolli)$, let $\po_c\in \real^3$ be the 
+In the collision-configuration $\xx_{i+1}(\tcolli)$, let $\po_c\in \real^3$ be a 
 contact point expressed in the global frame ${\cal R}_0$ of each of the two 
-bodies. We compute (see Figure~\ref{contact-points}) the associated points $\po_1$ 
+bodies (Figure~\ref{contact-points} left). We compute the associated points $\po_1$ 
 and $\po_2$ in the free-configuration $\xx_{i}(\tcolli)$, and the difference 
-$\mathbf{u}=\po_2-\po_1$ which will be used as the orthogonal direction the bodies can not move along at the path parameter $\tcolli$.
+$\mathbf{u}=\po_2-\po_1$ which will be used as the orthogonal direction the 
+bodies can not move along at the path parameter $\tcolli$ 
+(Figure~\ref{contact-points} right).
 
 
-Let $\translation^{*}\in \real^3$ denotes the position between frames of $\body_1$  
-and $\body_2$ in configuration $\xx_i(\tcolli)$. Let $\translation \in 
-\real^3$ (resp. $R\in SO(3)$) denote the same position (resp. rotation) in 
-configuration $\xx (\tcolli)$ where $\xx$ is any path in $\CS^{wp}$.
+%Let $\translation^{*}\in \real^3$ denotes the position between frames of $
+%\body_1$  and $\body_2$ in configuration $\xx_i(\tcolli)$. Let $\translation \in 
+%\real^3$ (resp. $R\in SO(3)$) denote the same position (resp. rotation) in 
+%configuration $\xx (\tcolli)$ where $\xx$ is any path in $\CS^{wp}$.
 
-We denote by $F$ the mapping from $\CS^{wp}$ to $\real^3$ defined by
+Let $M^{*}\in SE(3)$ denote the homogeneous transformation between frames of $
+\body_1$  and $\body_2$ in configuration 
+$\x_i(\tcolli)$. Let $M\in SE(3)$ denote the same transformation in configuration 
+$\x (\tcolli)$ where $\x$ is any path 
+in $\CS^{wp}$. Let $R\in SO(3)$ and $\translation\in\real^3$ 
+(resp. $\translation^{*}$) be the rotation 
+and translation parts of $M$ (resp. $M^{*}$).
+
+We denote by $F$ the path constraint defined by the mapping from $\CS^{wp}$ to $
+\real^3$ defined by
 \begin{equation}\label{eq:constraint}
-F (\xx) =  R^T (\translation^{*} - \translation)
+F (\xx) =  \mathbf{u}^T R^T (\translation^{*} - \translation)
 \end{equation}
+where the product $R^T (\translation^{*} - \translation)$ is used to express the translations difference in the global frame ${\cal R}_0$.
+
 Note that $F$ vanishes for any path $\xx$ such that in configuration
 $\xx(\tcolli)$ the relative position of $\body_2$ w.r.t. $\body_1$ is equal to $
-\translation^{*}$ or if the relative position $\translation^{*} - \translation$ is 
-orthogonal to $\mathbf{u}$.
+\translation^{*}$ or if the relative position $\translation^{*} - \translation$ is orthogonal to $\mathbf{u}$.
 
 
 When a collision is detected at $\tcolli$ along path $\xx_{i+1}$, we wish to add
@@ -464,27 +494,28 @@ However, as this constraint is non-linear, we linearize it around $\xx_i$:
 $$
 \frac{\partial F}{\partial \xx}(\xx_i)(\xx -\xx_i) = 0
 $$
-for any later iteration $\xx_j$, $j\geq i+1$.
+for any later iteration $\xx_j$, $j\geq i+1$. Both $F$ and $\frac{\partial F}{\partial \conf}$ are provided by our path planning framework~\cite{hpp} as differentiable functions.
 
 \vspace{0.2cm}
 
-Let $q_{k\,i}$ denotes waypoint $k$ along path $x_i$.
+Let $q_{k\,i}$ denote the waypoint $k$ along path $x_i$.
 The constraint on the position at $t_{coll\,i}$ is a function that depends only
 on two waypoints $q_{k\,i}$, $q_{k+1\,i}$, with $0\leq k\leq n$. There exists 
 $\beta\in[0,1]$ such that for any $j$:
 $$
-\xx_j (t_{coll\,i}) = (1-\beta) \conf_{k\,j} + \beta \conf_{k+1\,j}
+\xx_j (t_{coll\,i}) = \conf_{k\,j} + \beta (\conf_{k+1\,j} - \conf_{k\,j})
 $$
-Therefore, the Jacobian $J_F$ of constraint~(\ref{eq:constraint}) with respect to 
-$x$ is
-$$
-J_F = \left(\begin{array}{cccccc}
-0 & \cdots & (1-\beta)\,\mathbf{u}^T \frac{\partial F}{\partial q} (\xx_j(t_{coll\,i})) & \
-\beta\,\mathbf{u}^T \frac{\partial F}{\partial q} (\xx_j(t_{coll\,i})) & \cdots & 0
-\end{array}
-\right)
-$$
-Both $F$ and $\frac{\partial F}{\partial q}$ are provided by our path planning framework~\cite{hpp} as differentiable functions.
+The path Jacobian $J_F$ of constraint~(\ref{eq:constraint}) w.r.t. $x$ is thus built by block using the previous constraint jacobian $\frac{\partial F}{\partial \conf}$ and $\beta$. ????
+%Therefore, the Jacobian $J_F$ of constraint~(\ref{eq:constraint}) with respect to 
+%$x$ is
+%$$
+%J_F = \left(\begin{array}{cccccc}
+%0 & \cdots & (1-\beta)\,\mathbf{u}^T \frac{\partial F}{\partial q} (\xx_j(t_{coll\,i})) & \
+%\beta\,\mathbf{u}^T \frac{\partial F}{\partial q} (\xx_j(t_{coll\,i})) & \cdots & 0
+%\end{array}
+%\right)
+%$$
+
 
 \vspace{0.2cm}
 
@@ -553,20 +584,21 @@ RRT-connect~\cite{rrt-connect}.
 
 \begin{figure}[t]
 	\centering
-	\includegraphics[width=7.5cm]{2d_final_green.png}
+	\includegraphics[width=7.8cm]{contact_points6.png}
 	%\noindent\rule{8cm}{0.8pt}
-	\includegraphics[width=7.5cm]{concave_final_green.png}
-	\caption{Path-optimization results on a 2D-ponctual robot, moving around 
-	obstacles. Initial paths are in red, optimized ones in black. Grey paths 
-	represent intermediate iterations, red dots colliding configurations and blue 
-	dots the associated collision-free configurations of the backtracked paths 
+	\includegraphics[width=8cm]{contact_points2potential.png}
+	\caption{Path-optimization results on 2D-ponctual robots, moving around 
+	green obstacles. Initial paths are in red, optimized ones in black. Grey paths 
+	represent intermediate iterations, red and black dots resp. $\po_1$ and $\po_2$ 
+	points, red segments $\mathbf{u}$ and blue circles collision-free configurations 
+	of the backtracked paths 
 	where constraints have been computed.}
 	\label{2D_long}
 \end{figure}
 
 Figure~\ref{2D_long} shows several iterations of our optimizer on 2D cases. Since 
-in this special case, transformation constraints are equivalent to compulsory 
-configurations to pass through, we can verify that our optimized path is applying 
+in this special case, orthogonal constraints are equivalent to forbidden motion 
+direction, we can verify that our optimized path is applying 
 all computed constraints. We can also understand which collisions have led to 
 the constraints.
 
@@ -577,7 +609,7 @@ compute the corresponding collisions, constraints will be chosen on a very-not
 optimal path and will not be pertinent w.r.t. the obstacles we wanted to 
 avoid.
 
-Figure~\ref{2D_long} illustrates a \textit{very long} path example that RS or PRS will not manage to 
+Figure~\ref{local_box_optim} illustrates a \textit{very long} path example that RS or PRS will not manage to 
 optimize in an affordable time, because of probabilistically failing to sample 
 configurations in the box. GB succeeds to optimize the 
 path contained in the box, with the following cost coefficients 
@@ -599,8 +631,10 @@ examples presented in this paper.
 	\centering
 	\includegraphics[width=7.5cm]{local_box_optim.png}
 	\caption{Case of a long initial path (above) containing a small part that can 
-	be optimized (below). Random shortcut is unlikely to optimize the part containing detours in the box, whereas our method 
-	succeeds (in blue).}
+	be optimized (below). Random shortcut is unlikely to optimize the part 
+	containing detours in the box, whereas our method 
+	succeeds (in blue). This type of issue is common in navigation problems in 
+	environments with long corridors.}
 	\label{local_box_optim}
 \end{figure}
 
@@ -672,7 +706,7 @@ the result.}\label{algo:random-shortcut}
 	has just to 
 exchange the positions of its arms. The task is simple, however, in absence of 
 explicit indication, any probabilistic motion planner will compute a path that 
-makes the PR2 mobile basis purposelessly moving. This is the case of RRT-connect 
+makes the PR2 mobile base purposelessly moving. This is the case of RRT-connect 
 algorithm (left). Path optimization is expected to remove unnecessary motions. 
 The popular RS algorithm fails in this case (middle). Our GB algorithm 
 succeeds (right).}
@@ -699,6 +733,23 @@ RRT-connect activates both arms to solve the problem. Contrary to RS,
 GB manages to cancel the rotation of the free-arm while optimizing the 
 first arm motion. Initial path length 5.17 has been decreased to 4.55 by RS and to 3.20 by GB.
 
+
+\begin{figure}[t]
+	\centering
+	\includegraphics[width=6cm]{fiad_qinit.png}
+	\includegraphics[width=6cm]{fiad_qfinal.png}\\
+	\includegraphics[width=6cm]{fiad_real.png}
+	\includegraphics[width=6cm]{fiad-trajectorires.png}
+	
+	\caption{(Bottom left) An industrial use-case example proposed by Philips for 	
+	the 
+	Factory-in-a-Day project~\cite{factory-day-video}. A similar environment have 
+	been created (top) to 
+	illustrate that our method can comply with an industrial problem, where 
+	initial and final configurations are constrained in boxes. Trajectories results 
+	are presented (bottom right).}
+	\label{fiad}
+\end{figure}
 
 % analysis UR5:
 For the following example with a 6-axis manipulator arm (see Figure~\ref{trajectories} bottom-left)
@@ -748,8 +799,8 @@ computation averages for the PR2-in-kitchen example have been
 calculated: $59.5\,\text{s}$ (GB) and $76.2\,\text{s}$ (RS).
 Thus our method presents 
 similar computation times and path lengths for mobile manipulation tasks. However, 
-the extinction of the mobile base motion in the gradient-based optimized path is 
-advanced in the right column of Table~\ref{tab:results}. Thus the problem addressed 
+the disappearance of the mobile base motion in the gradient-based optimized path is 
+shown in the right column of Table~\ref{tab:results}. Thus the problem addressed 
 Figure~\ref{decoupled_DOF_optimization} is solved considering this DOF.
 
 
@@ -796,10 +847,10 @@ DESCRIBE TRAJECTORIES
     \textbf{arms} & PRS & $41.1\,\text{s}$ & $ 4.73$ & $ $ & $0\,\text{m}$\\
     & RS & $31.5\,\text{s}$ & $1.60$ & $ $ & $2.70\,\text{m}$\\
     \midrule
-    & Initial &  & $ $ & $ $ &\\
-    \textbf{PR2-in-} & GB & $\,\text{s}$ & $ $ & $ $ &\\
-    \textbf{kitchen} & PRS & $\,\text{s}$ & $ $ & $ $ &\\
-    & RS & $\,\text{s}$ & $ $ & $ $ &\\
+    & Initial &  & $15.0$ & $ $ &\\
+    \textbf{PR2-in-} & GB & $288\,\text{s}$ & $4.40$ & $ $ &\\
+    \textbf{kitchen} & PRS & $431\,\text{s}$ & $12.1$ & $ $ &\\
+    & RS & $95.6\,\text{s}$ & $5.33$ & $ $ &\\
     \midrule
     & Initial &  & $ $ & $ $ &\\
     \textbf{6-DOF-arm-} & GB & $\,\text{s}$ & $ $ & $ $ &\\
