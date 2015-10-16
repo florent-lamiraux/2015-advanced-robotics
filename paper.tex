@@ -178,6 +178,7 @@ path-optimizer works, from the formulation of the problem to the implemented
 algorithm. Finally, we conclude on experimental results in Section IV.
 
 
+????? This paper is based on a similar work, which has been sent to ICRA, with a different type of collision constraints.
 
 
 \section{RELATED WORK}
@@ -399,7 +400,9 @@ between $q_0$ and $q_{n+1}$. Since this solution is in collision, we set
 $\alpha_i = \alpha$ 
 where $\alpha$ is a parameter that will be explained in the algorithm section.
 
-We iterate step~(\ref{eq:iteration-1}) until path $\xx_{i+1}$ is in collision. 
+We iterate step~(\ref{eq:iteration-1}) until path $\xx_{i+1}$ is in collision. This 
+corresponds to the unconstrained function \texttt{computeIterate} in 
+Algorithm~\ref{algo:gradient}.
 When a collision is detected, we introduce a constraint and perform a new 
 iteration from $\xx_i$ as explained in the next section. We use a continuous 
 collision checker inspired of~\cite{SchwarzerExactCollision} to validate our 
@@ -467,8 +470,8 @@ bodies can not move along at the path parameter $\tcolli$
 
 Let $M^{*}\in SE(3)$ denote the homogeneous transformation between frames of $
 \body_1$  and $\body_2$ in configuration 
-$\x_i(\tcolli)$. Let $M\in SE(3)$ denote the same transformation in configuration 
-$\x (\tcolli)$ where $\x$ is any path 
+$\xx_i(\tcolli)$. Let $M\in SE(3)$ denote the same transformation in configuration 
+$\xx (\tcolli)$ where $\xx$ is any path 
 in $\CS^{wp}$. Let $R\in SO(3)$ and $\translation\in\real^3$ 
 (resp. $\translation^{*}$) be the rotation 
 and translation parts of $M$ (resp. $M^{*}$).
@@ -813,7 +816,7 @@ Figure~\ref{decoupled_DOF_optimization} is solved considering this DOF.
 	\vspace{0.05cm}
 	\includegraphics[width=7.0cm,height=6.3cm]{ur5sph_orth_constr_results.png}
 	\includegraphics[width=7.0cm,height=6.3cm]{puzzle_orth_constr_results.png}
-	\caption{Trajectories of wrists, end-effectors or center allong different paths: the initial path is represented in red, the RS optimized path in blue and the GB optimized path ($\alpha_{init}=0.1$) in green. For the freeflyer puzzle (bottom right), points $\po_1$, $\po_2$ and vectors $\mathbf{u}$ for constraints computation are also shown in grey and red.}
+	\caption{Trajectories of wrists, end-effectors or center allong different paths: the initial path is represented in red, the RS optimized path in blue and the GB optimized path ($\alpha_{init}=0.1$) in green.}
 	\label{trajectories}
 \end{figure}
 
@@ -827,45 +830,45 @@ DESCRIBE TRAJECTORIES
 \begin{table}
 \centering
 \scalebox{0.9}{
-  \begin{tabular}{cccccc}
+  \begin{tabular}{ccccc}
   \toprule
-    \textbf{Problem} & Path obtained from & Computation time  & Path length & Cost & Base traveled distance\\
+    \textbf{Problem} & Path obtained from & Computation time  & Path length & Base traveled distance\\
     \midrule
     \midrule
-    & Initial &  & $14.3$ & $ $ &\\
-    \textbf{Freeflyer-} & GB & $\,\text{ms}$ & $ $ & $ $ &\\
-    \textbf{puzzle} & PRS & $6.53\,\text{ms}$ & $14.3$ & $ $ &\\
-    & RS & $68.3\,\text{ms}$ & $6.05$ & $ $ &\\
+    & Initial &  & $14.3$  &\\
+    \textbf{Freeflyer-} & GB & $\,\text{ms}$ & $ $  &\\
+    \textbf{puzzle} & PRS & $6.53\,\text{ms}$ & $14.3$  &\\
+    & RS & $68.3\,\text{ms}$ & $6.05$  &\\
     \midrule
-    & Initial &  & $11.3$ & $ $ &\\
-    \textbf{Double-arm} & GB & $318\,\text{ms}$ & $4.95$ & $ $ &\\
-    \textbf{5-DOF} & PRS & $8.42\,\text{ms}$ & $8.73$ & $ $ &\\
-    & RS & $61.9\,\text{ms}$ & $6.96$ & $ $ &\\
+    & Initial &  & $11.3$  &\\
+    \textbf{Double-arm} & GB & $318\,\text{ms}$ & $4.95$  &\\
+    \textbf{5-DOF} & PRS & $8.42\,\text{ms}$ & $8.73$  &\\
+    & RS & $61.9\,\text{ms}$ & $6.96$  &\\
     \midrule
-    & Initial &  & $10.8$ & $ $ & $8.03$\,\text{m}\\
-    \textbf{PR2-crossing-} & GB & $24.8\,\text{s}$ & $1.90$ & $ $ & $10^{-7}\,\text{m}$\\
-    \textbf{arms} & PRS & $41.1\,\text{s}$ & $ 4.73$ & $ $ & $0\,\text{m}$\\
-    & RS & $31.5\,\text{s}$ & $1.60$ & $ $ & $2.70\,\text{m}$\\
+    & Initial &  & $10.8$  & $8.03$\,\text{m}\\
+    \textbf{PR2-crossing-} & GB & $24.8\,\text{s}$ & $1.90$  & $0\,\text{m}$\\
+    \textbf{arms} & PRS & $41.1\,\text{s}$ & $ 4.73$ & $0\,\text{m}$\\
+    & RS & $31.5\,\text{s}$ & $1.60$ & $2.70\,\text{m}$\\
     \midrule
-    & Initial &  & $15.0$ & $ $ &\\
-    \textbf{PR2-in-} & GB & $288\,\text{s}$ & $4.40$ & $ $ &\\
-    \textbf{kitchen} & PRS & $431\,\text{s}$ & $12.1$ & $ $ &\\
-    & RS & $95.6\,\text{s}$ & $5.33$ & $ $ &\\
+    & Initial &  & $15.0$ &\\
+    \textbf{PR2-in-} & GB & $288\,\text{s}$ & $4.40$ &\\
+    \textbf{kitchen} & PRS & $431\,\text{s}$ & $12.1$ &\\
+    & RS & $95.6\,\text{s}$ & $5.33$ &\\
     \midrule
-    & Initial &  & $ $ & $ $ &\\
-    \textbf{6-DOF-arm-} & GB & $\,\text{s}$ & $ $ & $ $ &\\
-    \textbf{with-spheres} & PRS & $\,\text{s}$ & $ $ & $ $ &\\
-    & RS & $\,\text{s}$ & $ $ & $ $ &\\
+    & Initial &  & $ $ &\\
+    \textbf{6-DOF-arm-} & GB & $\,\text{s}$ & $ $ &\\
+    \textbf{with-spheres} & PRS & $\,\text{s}$ & $ $ &\\
+    & RS & $\,\text{s}$ & $ $ &\\
     \midrule
-    & Initial &  & $ $ & $ $ &\\
-    \textbf{6-DOF-arm-} & GB & $\,\text{s}$ & $ $ & $ $ &\\
-    \textbf{through-window} & PRS & $\,\text{s}$ & $  $ & $ $ &\\
-    & RS &  $\,\text{s}$ & $ $ & $ $ &\\
+    & Initial &  & $ $ &\\
+    \textbf{6-DOF-arm-} & GB & $\,\text{s}$ & $ $ &\\
+    \textbf{through-window} & PRS & $\,\text{s}$ & $  $ &\\
+    & RS &  $\,\text{s}$ & $ $ &\\
     \midrule
-    & Initial &  & $19.0$ & $ $ &\\
-    \textbf{Baxter-in-} & GB & $2449\,\text{s}$ & $5.85$ & $ $ &\\
-    \textbf{office} & PRS & $638\,\text{s}$ & $17.5$ & $ $ &\\
-    & RS & $139\,\text{s}$ & $13.3$ & $ $ &\\
+    & Initial &  & $19.0$ &\\
+    \textbf{Baxter-in-} & GB & $2449\,\text{s}$ & $5.85$ &\\
+    \textbf{office} & PRS & $638\,\text{s}$ & $17.5$ &\\
+    & RS & $139\,\text{s}$ & $13.3$ &\\
     \bottomrule
   \end{tabular}
   }%scalebox
