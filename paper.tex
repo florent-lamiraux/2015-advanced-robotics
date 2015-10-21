@@ -10,7 +10,6 @@
 \usepackage{graphicx} % for pdf, bitmapped graphics files
 %\usepackage{epsfig} % for postscript graphics files
 \usepackage{mathptmx} % assumes new font selection scheme installed
-%\usepackage{times} % assumes new font selection scheme installed
 \usepackage{amsmath} % assumes amsmath package installed
 \usepackage{amssymb}  % assumes amsmath package installed
 \usepackage{mathrsfs}
@@ -29,10 +28,8 @@
 \algnewcommand\algorithmicoutput{\textbf{output:}}
 \algnewcommand\OUTPUT{\item[\algorithmicoutput]}
 \makeatletter
-%\let\NAT@parse\undefined % allow hyperref to work with ieeeconf.cls for bib numbers
 \makeatother
 \usepackage{hyperref}
-%\usepackage{cite}
 
 
 % Math shortcuts :
@@ -61,14 +58,13 @@
 \begin{document}
 \graphicspath{{images/}}
 
-\jvol{00} \jnum{00} \jyear{2015} \jmonth{October}
+\jvol{30} \jnum{15} \jyear{2016} \jmonth{August}
 
 \title{{\itshape Advanced Robotics} A simple path optimization method for motion planning }	
 
-\author{Myl\`{e}ne Campana$^{a,b}$ $^{\ast}$ \thanks{$^\ast$Corresponding author. Email: mcampana@laas.fr}, Florent Lamiraux$^{a,b}$ and Jean-Paul Laumond$^{a,b}$
+\author{Myl\`{e}ne Campana$^{\ast}$ \thanks{$^\ast$Corresponding author. Email: mcampana@laas.fr}, Florent Lamiraux and Jean-Paul Laumond
 \\\vspace{6pt}
-$^{a}${\em{LAAS-CNRS, Toulouse, France}};
-$^{b}${\em{ This work has been supported by the project ERC Advanced Grant 340050 Actanthrope and by the FP~7 project Factory in a Day under grant agreement n°~609206 }}
+{\em{LAAS-CNRS, 7 av. Colonel Roche, 31400 Toulouse, FRANCE}}
 }
 \maketitle
 
@@ -247,11 +243,6 @@ distance constraints. Unlike our method however, interpolating configuration -wh
 can be viewed as constraints- are freezing the whole robot configuration instead of 
 a relevant subpart. Thus, this method cannot solve the 
 Figure~\ref{decoupled_DOF_optimization} problem.
-
-%Unlike our method however, the iterations are composed of 
-%Cubic-B-splines. The benefit of this method is that the result is a 
-%differentiable path.
-
 
 
 \section{PATH OPTIMIZATION} \label{section:path_optim}
@@ -518,42 +509,7 @@ L_{k+1} &= \frac{\partial f}{\partial \xx}(\xx_i)
 \end{align*}
 
 
-
-%Let $\translation^{*}\in \real^3$ denotes the position between frames of $
-%\body_1$  and $\body_2$ in configuration $\xx_i(\tcolli)$. Let $\translation \in 
-%\real^3$ (resp. $R\in SO(3)$) denote the same position (resp. rotation) in 
-%configuration $\xx (\tcolli)$ where $\xx$ is any path in $\CS^{wp}$.
-
-%Let $M^{*}\in SE(3)$ denote the homogeneous transformation between frames of $
-%\body_1$  and $\body_2$ in configuration 
-%$\xx_i(\tcolli)$. Let $M\in SE(3)$ denote the same transformation in configuration 
-%$\xx (\tcolli)$ where $\xx$ is any path 
-%in $\CS^{wp}$. Let $R\in SO(3)$ and $\translation\in\real^3$ 
-%(resp. $\translation^{*}$) be the rotation 
-%and translation parts of $M$ (resp. $M^{*}$).
-
-%We denote by $F$ the path constraint defined by the mapping from $\CS^{wp}$ to $
-%\real^3$ defined by
-%\begin{equation}\label{eq:constraint}
-%F (\xx) =  \mathbf{u}^T R^T (\translation^{*} - \translation)
-%\end{equation}
-%where the product $R^T (\translation^{*} - \translation)$ is used to express the translations difference in the global frame ${\cal R}_0$.
-
-\vspace{0.2cm}
-
-
-%Therefore, the Jacobian $J_F$ of constraint~(\ref{eq:constraint}) with respect to 
-%$x$ is
-%$$
-%J_F = \left(\begin{array}{cccccc}
-%0 & \cdots & (1-\beta)\,\mathbf{u}^T \frac{\partial F}{\partial q} (\xx_j(t_{coll\,i})) & \
-%\beta\,\mathbf{u}^T \frac{\partial F}{\partial q} (\xx_j(t_{coll\,i})) & \cdots & 0
-%\end{array}
-%\right)
-%$$
-
-
-\vspace{0.2cm}
+\vspace{0.4cm}
 
 Then we refer to~\cite{nocedal2006numerical} for solving constrained quadratic 
 programs (QP) (function \texttt{computeIterate} in 
@@ -712,15 +668,11 @@ RRT-connect~\cite{rrt-connect}.
 
 \begin{figure}[t]
 	\centering
-	\includegraphics[width=7.8cm]{contact_points6.png}
-	\includegraphics[width=8cm]{contact_points2potential.png}
+	\includegraphics[width=7.8cm]{contact_points6.pdf}
+	\includegraphics[width=8cm]{contact_points2potential.pdf}
 	\caption{Path-optimization results on 2D-ponctual robots, moving around 
-	green obstacles. Initial paths are in red, optimized ones in black. Grey paths 
-	represent intermediate iterations, red and black dots resp. $\po_1$ and $\po_2$ 
-	points, red segments $\mathbf{u}$ and blue circles collision-free 
-	configurations 
-	of the backtracked paths 
-	where constraints have been computed.}
+	green obstacles. Initial paths are dashed and crosses represent contact points 
+	related to collision-constraints.}
 	\label{2D_long}
 \end{figure}
 
@@ -759,7 +711,8 @@ examples presented in this paper.
 \begin{figure}[t]
 	\centering
 	\includegraphics[width=7.5cm]{local_box_optim.png}
-	\caption{Case of a long initial path (above) containing a small part that can 
+	\caption{Case of a long initial path in red (above) containing a small part 
+	that can 
 	be optimized (below). Random shortcut is unlikely to optimize the part 
 	containing detours in the box, whereas our method 
 	succeeds (in blue). This type of issue is common in navigation problems in 
@@ -773,14 +726,6 @@ examples presented in this paper.
 
 We also experiment our algorithm on more complex robots, with transformation 
 collision-constraints. Unless another value is given, $\alpha_{init}$ is set to 0.2.
-
-%\begin{figure}[b]
-%	\centering
-%	\includegraphics[width=5cm,height=3.5cm]{ur5_v2.png}
-%	\caption{6-DOF robot arm on which our path-optimization has been tested.}
-%	\label{ur5}
-%\end{figure}
-
 
 \begin{algorithm}
 \begin{algorithmic}[1] % line numerotation
@@ -859,10 +804,6 @@ the current DOF and the previous subpath for other DOF. If this path is collisio
 free, it is replaced as in RS. This process is also stopped when 5 iterations of 
 non-improvement are reached.
 
-%But we admit that restrincting the number of random shortcut iterations is 
-%neither a acceptable criterion because of randomness.
-%We also discuss the good properties and limits of our algorithm.
-
 \vspace{0.4cm}
 % freeflyer puzzle
 Before entering the manipulators examples, the GB algorithm is tested and compared 
@@ -919,24 +860,6 @@ to the result of RS and to what can be observed in reality~\cite{factory-day-vid
 The initial path length 6.65 is decreased to 2.08 by RS, to 
 1.98 by GB and unchanged by PRS.
 
-% UR5-wall  OPTIONAL PART imo
-%\begin{wrapfigure}[16]{r}{7cm}
-%\centering
-%\includegraphics[width=7cm]{ur5-wall-traj-rank-loss.png}
-%\caption{UR5}
-%\label{ur5-wall}
-%\end{wrapfigure}
-%In a much more cluttered environment Figure~\ref{ur5-wall} where the robot moves 
-%throught a hole in a wall and between two cylinders, path reduction only manages to 
-%reduce some but not 
-%all detours. This behavior can be explained by a path over-constraining due to the 
-%important proximity of the robot to the obstacles during the whole path, and 
-%because there are not so many DOF to play on to easily avoid collisions and 
-%return a small-cost solution.
-%We advance this explanation because on the two following high-DOF examples of the 
-%video (and Figure~\ref{pr2_final}) based on PR2, results are better 
-%in terms of path length and quality.
-
 % baxter:
 An problem involving a Baxter-like\footnote{A torso rotation was added.} robot manipulating in an office environment is shown Figure~\ref{fig:trajectories} bottom right. The robot starts with its end-effectors above the computer and has to turn and reach the shelf. According to the left-hand trajectories quality (see the video for the full motion) and path lengths, 9.10 (initial RRT-connect), 7.52 (RS), 8.41 (PRS) and 2.69 (GB with $\alpha_{init}=0.1$), the GB optimizer is the most successfull in this case.
 
@@ -962,8 +885,6 @@ result, only presented in the video, cancels the mobile base motion, but not all
 unnecessary DOF. Moreover, the arms motion is very wide and not as optimized as in 
 the GB trajectory.
 
-%The removal of the translation is also a consequence of our cost ponderation as described in the previous section.  NON ???
-
 
 % analysis PR2 in kitchen:
 We obtain similar results on the PR2 performing a manipulation task 
@@ -985,13 +906,14 @@ path remains acceptable.
 \vspace{0.4cm}
 
 Optimization computation time and path length averages are presented for 30 runs of 
-each example in the Table~\ref{tab:results}.
-It appears that our method presents 
-similar computation times and path lengths for mobile manipulation tasks. However, 
-the complete disappearance of the mobile base motion in the PRS and GB optimized 
-paths is highlighted in the right column of Table~\ref{tab:results}. Thus the 
-problem addressed Figure~\ref{decoupled_DOF_optimization} is solved considering this 
-DOF.
+each example in the Table~\ref{tab:results}. In some cases $\alpha_{init}$ was reduced to comply with very narrow passages, or increased in the opposite case. 
+It appears that, for non-high DOF examples, computation time is higher using the GB optimization. The worst case shows up for the puzzle problem where the number of constraints of GB is typically important.
+On the other hand, our method almost always provides the shortest paths, whereas it is not even the best criterion to quantify the parasite motions disappearance.
+Such results are the artefact of the termination conditions of RS and PRS, length reduction or affordable computation time. This is particularly visible for PRS which easily gives up in some problems, such as the 2D slidding-robot, the UR5-with-spheres or the puzzle.
+Finally, the complete vanishing of the mobile base motion in the PRS and GB 
+optimized paths is highlighted in the right column of Table~\ref{tab:results}. Thus 
+the problem addressed Figure~\ref{decoupled_DOF_optimization} is solved considering 
+this DOF.
 
 
 
@@ -1041,7 +963,7 @@ DOF.
 
 
 
-\begin{table}
+\begin{table}[ht]
 \centering
 \scalebox{0.9}{
   \begin{tabular}{ccccc}
@@ -1052,17 +974,32 @@ DOF.
     & Initial &  & $21.9$  &\\
     \textbf{2D slidding-robot} & GB & $9.29\,\text{ms}$ & $17.0$  &\\
     \textbf{(Fig.~\ref{2D_long} right)} & PRS & $0.336\,\text{ms}$ & $21.7$  &\\
-    & RS & $1.89\,\text{ms}$ & $6.05$  &\\
+    & RS & $1.89\,\text{ms}$ & $17.7$  &\\
     \midrule
-    & Initial &  & $ $  &\\
-    \textbf{Freeflyer-} & GB & $\,\text{ms}$ & $ $  &\\
-    \textbf{puzzle} & PRS & $\,\text{ms}$ & $ $  &\\
-    & RS & $\,\text{ms}$ & $ $  &\\
+    & Initial &  & $18.8$  &\\
+    \textbf{Freeflyer-} & GB ($\alpha_{init}=0.05$) & $1.02\,\text{s}$ & $9.65$  &\\
+    \textbf{puzzle} & PRS & $1.13\,\text{ms}$ & $18.8$  &\\
+    & RS & $4.72\,\text{ms}$ & $10.3$  &\\
     \midrule
     & Initial &  & $10.8$  &\\
     \textbf{Double-arm} & GB & $10.3\,\text{ms}$ & $4.79$  &\\
     \textbf{5-DOF} & PRS & $2.17\,\text{ms}$ & $8.08$  &\\
     & RS & $5.33\,\text{ms}$ & $6.24$  &\\
+    \midrule
+    & Initial (RRT) &  & $4.97$ &\\
+    \textbf{UR5-} & GB ($\alpha_{init}=0.4$) & $2.12\,\text{s}$ & $2.97$ &\\
+    \textbf{with-spheres} & PRS & $0.884\,\text{s}$ & $4.56$ &\\
+    & RS & $2.89\,\text{s}$ & $2.99$ &\\
+    \midrule
+    & Initial &  & $4.83$ &\\
+    \textbf{UR5-} & GB ($\alpha_{init}=0.4$) & $314\,\text{ms}$ & $2.25$ &\\
+    \textbf{industrial-example} & PRS & $30.2\,\text{ms}$ & $4.53$ &\\
+    & RS &  $95.6\,\text{ms}$ & $2.16$ &\\
+    \midrule
+    & Initial &  & $20.2$ &\\
+    \textbf{Baxter-in-} & GB & $22.7\,\text{s}$ & $6.65$ &\\
+    \textbf{office} & PRS & $9.49\,\text{s}$ & $18.9$ &\\
+    & RS & $3.13\,\text{s}$ & $11.9$ &\\
     \midrule
     & Initial &  & $12.6$  & $9.57$\,\text{m}\\
     \textbf{PR2-crossing-} & GB & $1.28\,\text{s}$ & $2.57$  & $0\,\text{m}$\\
@@ -1073,27 +1010,12 @@ DOF.
     \textbf{PR2-in-} & GB & $19.2\,\text{s}$ & $4.53$ &\\
     \textbf{kitchen-1} & PRS & $23.5\,\text{s}$ & $12.2$ &\\
     & RS & $9.88\,\text{s}$ & $5.75$ &\\
-    \midrule
-    & Initial &  & $ $ &\\
-    \textbf{UR5-} & GB & $\,\text{s}$ & $ $ &\\
-    \textbf{with-spheres} & PRS & $\,\text{s}$ & $ $ &\\
-    & RS & $\,\text{s}$ & $ $ &\\
-    \midrule
-    & Initial &  & $ $ &\\
-    \textbf{UR5-} & GB & $\,\text{s}$ & $ $ &\\
-    \textbf{industrial-example} & PRS & $\,\text{s}$ & $  $ &\\
-    & RS &  $\,\text{s}$ & $ $ &\\
-    \midrule
-    & Initial &  & $ $ &\\
-    \textbf{Baxter-in-} & GB & $\,\text{s}$ & $ $ &\\
-    \textbf{office} & PRS & $\,\text{s}$ & $ $ &\\
-    & RS & $\,\text{s}$ & $ $ &\\
     \bottomrule
   \end{tabular}
   }%scalebox
 \caption{Average results for 30 runs of several examples presented in the paper or 
-the video. For each run, a solution path is planned by Visibility-PRM as initial 
-guess for each optimizer.
+the video. For each run, a solution path is planned by Visibility-PRM (unless `RRT' 
+for RRT-connect is mentioned) as initial guess for each optimizer.
 For the PR2-crossing-arms example only, the right column represents the 
 distance that is traveled by the robot mobile base during the different paths.
 }
@@ -1115,9 +1037,14 @@ for high-DOF robots, removing unnecessary DOF motions. Our optimizer also manage
 to reduce a local detour in a long path while random shortcut methods will mostly 
 fail.
 
-In a future work, we plan to study a combination of a random shortcut and the gradient-based optimizers since they seem to share a complementarity. .....
+In a future work, we plan to study .....
 
-\bibliographystyle{tADR} % plain, alpha, abbr, unsrt
+
+\section*{Funding}
+This work has been supported by the project ERC Advanced Grant 340050 Actanthrope and by the FP~7 project Factory in a Day under grant agreement n°~609206.
+
+
+\bibliographystyle{tADR}
 \bibliography{paper}
 
 \end{document}
