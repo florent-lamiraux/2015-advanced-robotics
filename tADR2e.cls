@@ -231,10 +231,11 @@
                                         {\mbox{\fontfamily{ams}\fontsize{\sf@size}{\sf@size}\selectfont\bf#1}}%
                                         {\mbox{\fontfamily{ams}\fontsize{\ssf@size}{\ssf@size}\selectfont\bf#1}}}
 %
-\DeclareMathAlphabet{\mathbb}{OT1}{ams}{bx}{n}
-\SetMathAlphabet\mathbb{normal}{OT1}{ams}{bx}{n}
-\SetMathAlphabet\mathbb{bold}{OT1}{ams}{bx}{n}
-\def\bb{\mathbb}
+% COMMITED TO HAVE REAL DOUBLE-BARS LETTERS...
+%\DeclareMathAlphabet{\mathbb}{OT1}{ams}{bx}{n}
+%\SetMathAlphabet\mathbb{normal}{OT1}{ams}{bx}{n}
+%\SetMathAlphabet\mathbb{bold}{OT1}{ams}{bx}{n}
+%\def\bb{\mathbb}
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
@@ -982,8 +983,10 @@
      \let\@oddfoot\@evenfoot
      \def\@oddhead{\hbox to \textwidth{{\small\begin{tabular}[t]{@{}l@{}}
                                                                                      \\ %[14.9pt]
-                          {To appear in \itshape \@jname} \\Vol. \@jvol, No. \@jnum,
-                          \ifx\@jmonth\empty\else\@jmonth\ \fi\@jyear,  \thepage--\@endpage\\
+                                                                                     % COMMITED LINES HERE
+                          {Submitted to \itshape \@jname}
+                          %{To appear in \itshape \@jname} \\Vol. \@jvol, No. \@jnum,
+                          %\ifx\@jmonth\empty\else\@jmonth\ \fi\@jyear,  \thepage--\@endpage\\
                           \end{tabular}}%
                           \hfill%
                           }}%
