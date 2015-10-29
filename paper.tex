@@ -22,9 +22,9 @@
 \usepackage{proof}
 \newtheorem{property}{Property}
 \usepackage[numbers]{natbib}
-\algnewcommand\algorithmicinput{\textbf{input:}}
+\algnewcommand\algorithmicinput{\textbf{Input:}}
 \algnewcommand\INPUT{\item[\algorithmicinput]}
-\algnewcommand\algorithmicoutput{\textbf{output:}}
+\algnewcommand\algorithmicoutput{\textbf{Output:}}
 \algnewcommand\OUTPUT{\item[\algorithmicoutput]}
 \makeatletter
 \makeatother
@@ -66,7 +66,10 @@
 
 
 
-\title{A simple path optimization method for motion planning$^{1}$ \thanks{$^{1}$Note for the reviewers: This paper is an extended version of a paper submitted to IEEE ICRA 2016~\cite{pathOptimICRA_HAL}. The current version includes a problem formulation, a convergence analysis and many experimental results (including industrial examples) which are absent from the conference version.}}	
+\title{A simple path optimization method for motion planning$^{1}$ \thanks{$^{1}$Note for the reviewers: 
+This paper is an extended version of a paper submitted to IEEE ICRA 2016~\cite{pathOptimICRA_HAL}. The 
+current version includes a problem formulation, a convergence analysis and many experimental results (including an 
+industrial example) which are absent from the conference version.}}	
 
 \author{Myl\`{e}ne Campana$^{\ast}$ \thanks{$^\ast$Corresponding author. Email: \href{mailto:mcampana@laas.fr}{mcampana@laas.fr}}, Florent Lamiraux and Jean-Paul Laumond
 \\\vspace{6pt}
@@ -81,18 +84,19 @@ Most algorithms in probabilistic sampling-based path planning compute
 collision-free paths made of straight line segments lying in the configuration 
 space. Due
 to the randomness of sampling, the paths make detours that need to be optimized.
-The contribution of this paper is to propose a gradient-based (GB) algorithm that
-transforms a polygonal collision-free path into a shorter one, while both:
-\begin{itemize}
-\item requiring only collision checking, and not any time-consuming obstacle distance computation nor geometry simplification,
-\item constraining only part of the configuration variables that may cause a 
-collision, and not the entire configurations, and
-\item reducing parasite motions that are not useful for the problem resolution without any assumption.
-\end{itemize}
-The algorithm is simple and requires few parameter tuning. Experimental
-results include navigation and manipulation tasks, e.g. an robotic arm 
-manipulating throw in boxes and a PR2 robot working in a kitchen environment. 
-Comparisons with a random shortcut optimizer and a partial shortcut are also provided.
+The contribution of this paper is to propose a basic gradient-based (GB) algorithm 
+that transforms a polygonal collision-free path into a shorter one.
+While requiring only collision 
+checking, and not any time-consuming obstacle distance computation nor geometry 
+simplification, we constrain only part of the configuration variables 
+that may cause a collision, and not entire configurations. As a result, parasite motions that are not useful for the problem resolution are reduced without any 
+assumption.
+Experimental results include navigation and manipulation tasks, 
+e.g. a manipulator arm filling boxes and a PR2 robot working in a kitchen 
+environment. Comparisons with a random shortcut optimizer and a partial 
+shortcut have also been studied.
+
+% few parameter tuning REMOVED
 
 \medskip
 
@@ -105,7 +109,8 @@ Comparisons with a random shortcut optimizer and a partial shortcut are also pro
 \section{Introduction}
 Motion planning for systems in cluttered environments has been addressed for more
 than thirty years~\cite{ref-motionplan}. 
-To explore the connected components of collision-free configuration spaces, pionnering contributions in the 90’s introduced certain levels of random searches, i.e. random walks in~\cite{potentielBarraquandLatombe}, random sampling in 
+To explore the connected components of collision-free configuration spaces, pioneering 
+contributions in the 90’s introduced certain levels of random searches, i.e. random walks in~\cite{potentielBarraquandLatombe}, random sampling in 
 ~\cite{KavrakiLatombePRM} and~\cite{LaValleKuffnerRRT}. Today most motion planners are inspired by these seminal approaches.
 The main issue using these techniques is that the computed path makes unnecessary 
 detours and needs to be post-processed before being executed by a virtual or real 
@@ -120,7 +125,6 @@ for easy problems, but they are mostly unable to solve narrow passage issues.
 \item Optimal random sampling~\cite{KaramanPRMstarRRTstar} are also close to an
 optimal solution, but computation time is significantly higher than classical
 approaches.
-%Moreover the roadmap is only valid for a given motion planning problem. 
 \end{itemize}
 
 In this paper, we propose a method aimed at shortening path length after a path
@@ -133,9 +137,9 @@ still very
 popular~\cite{Sekhavat-Svestka1998,Geraerts04clearancebased,HauserFastSmooth}. 
 However, RS requires fine 
 tuning of the termination condition and is no efficient for long 
-trajectories where only a small part needs to be optimized, 
-as in the (Figure~\ref{local_box_optim}). 
-The (Figure~\ref{decoupled_DOF_optimization}) presents another situation where RS 
+trajectories where only a minor part needs to be optimized, 
+as in (Figure~\ref{local_box_optim}).
+(Figure~\ref{decoupled_DOF_optimization}) presents another situation where RS 
 will always fail to optimize the initial path, since it cannot decouple the 
 robot degrees of freedom (DOF) on which the optimization occurs. This problem is 
 addressed by our method.
@@ -160,7 +164,7 @@ it simpler:~\cite{chompIjrr} covers PR2 bodies with spheres,
 while~\cite{convexOptimMotplan} needs to decompose objects into convex subsets.
 
 Finally it should be noticed that optimality in robot motion is a notion that should be clarified. Most of the time motion planners provide an optimized motion, which is not optimal at all, but is the output of a given optimization method. When optimal motions exist, numerical
-algorithms mostly fail in accounting for their combinatorial structure. Moreover, optimization algorithms bypass (not overcome) the question of the existence of optimal motions~\cite{LaumondOptim}. In that perspective, a path optimization algorithm has to be evaluated with respect to other existing optimization techniques, from qualitative properties and from computational performance.
+algorithms mostly fail in accounting for their combinatorial structure. In addition, optimization algorithms bypass (not overcome) the question of the existence of optimal motions~\cite{LaumondOptim}. In that perspective, a path optimization algorithm has to be evaluated with respect to other existing optimization techniques, from qualitative properties and from computational performance.
 
 The idea of our method is to find a good trade-off between
 the simplicity of “blind” methods like shortcut algorithm,
@@ -182,7 +186,7 @@ algorithm. Finally, we conclude on experimental results in Section IV.
 \section{RELATED WORK}
 Previous work on path optimization has been conducted. CHOMP algorithm~\cite{chompIjrr} optimizes an initial guess provided as
 input. It minimizes a time invariant cost function using efficient covariant
-hamiltonian gradient descent. The cost is quantified by non-smooth parts (with
+Hamiltonian gradient descent. The cost is quantified by non-smooth parts (with
 high velocities) and an obstacle avoidance term, provided by the distance to the 
 nearest obstacle for each iteration of the trajectory. Calculating these nearest 
 distances however is time-consuming because the distances between all pairs of 
@@ -195,7 +199,7 @@ at the cost of a geometry approximation.
 STOMP method~\cite{KalakrishnanStomp} avoids to compute an 
 explicit gradient for cost optimization using a stochastic analysis of local 
 random samples. But as for CHOMP, the obstacle cost term requires a voxel map to 
-perform its Euclidian Distance Transforms, and represents the robot bodies with 
+perform its Euclidean Distance Transforms, and represents the robot bodies with 
 overlapping spheres. Such technique provides lots of distance and penetration 
 information but remains very time consuming and is not as precise as some 
 distance computation techniques based on the problem meshes as 
@@ -223,14 +227,15 @@ Some heuristics use random shortcuts on the initial guess combined with a
 trajectory re-building that returns ${C}^1$ shortcuts made of parabolas and lines 
 (bang-bang control)~\cite{HauserFastSmooth}. These local refined trajectories 
 are time-optimal since they comply with acceleration and velocity constraints. 
-~\cite{Guernane2011}, also based on random shooting, is guiding 
+Also based on random shooting,~\cite{Guernane2011} is guiding 
 configuration-generation with local holonomic considerations. 
-But this method remains only 
+Nevertheless this method remains only 
 locally optimal, and is not addressing high-DOF problems.
-~\cite{Geraerts04clearancebased}, whereas just implemented for freeflyer robots, is 
-using medial axis retractation for clearance and a PRS (applied only on random DOF) 
-which can address the problem of (Figure~\ref{decoupled_DOF_optimization}) but is 
-relatively slower than RS. Moreover, PRS is not using the information returned by 
+~\cite{Geraerts04clearancebased} is 
+using medial axis retraction for clearance and a PRS (applied only on random DOF) 
+which can address the problem of (Figure~\ref{decoupled_DOF_optimization}). However, it is 
+relatively slower than RS and only implemented for freeflyer robots. 
+Furthermore, PRS is not using the information returned by 
 the checker of which links are colliding to guide which DOF or group of DOF are 
 relevant to shortcut, contrary to our method.
 
@@ -240,7 +245,7 @@ iteration is detected in collision, instead of trying to constantly satisfy
 distance constraints. Unlike our method however, collision constraints are 
 handled by interpolating configurations which, at some points of the trajectory, 
 freeze the whole robot configuration instead of a relevant subpart. Thus, this 
-method cannot solve the (Figure~\ref{decoupled_DOF_optimization}) problem.
+method cannot solve (Figure~\ref{decoupled_DOF_optimization}) issue.
 
 
 \section{PATH OPTIMIZATION} \label{section:path_optim}
@@ -344,8 +349,7 @@ $$
 $$
 
 \subsubsection{Cost}
-
-let $W\in\real^{p\times p}$ be a diagonal matrix of weights:
+Let $W\in\real^{p\times p}$ be a diagonal matrix of weights:
 $$
 W=\left(\begin{array}{cccccccccc}
 w_1 I_{p_1}       &        &  0  \\
@@ -362,7 +366,7 @@ $$
 \conf_1)}.
 $$
 Weights are used to homogenize translations and rotations in the velocity vector. 
-For rotations, the weight is equal to the maximal distance of the robot bodies 
+For a rotation, the weight is equal to the maximal distance of the robot bodies 
 moved by the joint to the center of the joint, in a given configuration.
 
 Given $\conf_0$ and $\conf_{wp+1}$ fixed, the cost we want to minimize is defined 
@@ -418,7 +422,7 @@ corresponds to the unconstrained function \texttt{computeIterate} in
 When a collision is detected, we introduce a constraint and perform a new 
 iteration from $\xx_i$ as explained in the next section. We use a continuous 
 collision checker inspired of~\cite{SchwarzerExactCollision} to validate our 
-paths and to return the first colliding configuration along a path. This step corresponds to \texttt{validatePath} in (Algorithm~\ref{algo:gradient}).
+paths and to return the first colliding configuration along a path. This stage corresponds to \texttt{validatePath} in (Algorithm~\ref{algo:gradient}).
 
 \subsection{Constraints}
 
@@ -434,11 +438,12 @@ paths and to return the first colliding configuration along a path. This step co
 	\label{optim_grad}
 \end{figure}
 
-Let us assume that at iteration $i$, $k$ constraints have been inserted before the current interation. These constraints are stored as lines of a Jacobian matrix
+Let us assume that at iteration $i$, $k$ constraints have been inserted before the current iteration. 
+These constraints are stored as lines of a Jacobian matrix as follows:
 $$
 \Jf_{i} = \left(\begin{array}{c}L_1 \\ \vdots \\ L_k\end{array}\right)
 $$
-where iterate $\p_i$ are constrained to be in the kernel of $\Jf_{i}$
+where the step $\p_i$ is constrained to be in the kernel of $\Jf_{i}$ as follows:
 $$
 \Jf_{i} \p_i = 0
 $$
@@ -496,15 +501,26 @@ $$
 
 Notice that $\mathbf{u}$ is well defined since configuration 
 $\xx_{i}(t_{coll\ i})$ is collision-free.
+Let $g$ be the function defined from $\CS$ to $\real$ by:
+$$
+g (\conf) = \left(M_{1}^{-1} (\conf) M_2 (\conf) \po_2 - \po_1 | \mathbf{u}\right)
+$$
+where $\po_1$ and $\po_2$ are computed in the configuration $\conf$. The function $g$ 
+represents the projection of $\overrightarrow{\po_1\po_2}$ on $\mathbf{u}$ which is calculated 
+from the last collision-free path at abscissa $\tcolli$.
+
 Let $f$ be the function defined from $\CS^{wp}$ to $\real$ by:
 $$
-f (\xx) = \left(M_{1}^{-1} (\xx) M_2 (\xx) \po_2 - \po_1 | \mathbf{u}\right)
+f (\xx) = g(\xx (\tcolli))
 $$
 The constraint is defined for any path $\xx$ by:
 \begin {equation}\label{eq:new-constraint}
 f(\xx) - f(\xx_{i}) = 0.
 \end {equation}
-As this constraint is non-linear, it is linearized around $\xx_{i}$. This step is described in a further section. Then, a line is added in the contraint Jacobian matrix (function 
+This constraint forces the configuration $\xx (\tcolli)$ to keep the same distance 
+between points $\po_1$ and $\po_2$ that $\xx_i (\tcolli)$. As this constraint is 
+non-linear, we linearize it around $\xx_{i}$. This step is described in a further 
+section. Then, a line is added in the constraint Jacobian matrix (function 
 \texttt{addCollisionConstraint}), and the constraint 
 Jacobian becomes:
 \begin {align*}
@@ -544,7 +560,7 @@ and $\beta$, corresponding to \texttt{computeCollisionConstraint} in
 \subsection{Convergence Analysis}
 For iterative algorithms, the risk of falling in an infinite loop 
 that keeps adding a redundant constraint exists.
-In this section, we give some asumptions under which our 
+In this section, we give some assumptions under which our 
 algorithm will converge, given the constraint definition and the 
 function \texttt{solveRedundantConstraint}.
 From the definition of $\Jf_{i}$, it is straightforward that:
@@ -552,36 +568,42 @@ From the definition of $\Jf_{i}$, it is straightforward that:
 \kernel \Jf_{i+1} \subset \kernel \Jf_{i}
 \end{equation}
 Let us assume that:
-\begin{equation}\label{eq:asumption-1}
+\begin{equation}\label{eq:assumption-1}
 L_{k+1}\p_i \not= 0.
 \end{equation}
-We will elaborate later on this asumption. This means that $\p_{i}\notin\kernel J_{i+1}$, and as $\p_{i}\in\kernel J_{i}$, then:
+We will elaborate later on this assumption. This means that $\p_{i}\notin\kernel J_{i+1}$, and as $\p_{i}\in\kernel J_{i}$, then:
 $$
-\kernel J_i \not= \kernel J_{i+1}.
+\kernel J_i \not= \kernel J_{i+1}
 $$
 From~(\ref{eq:decreasing-kernel}), we deduce that:
 $$
-\dim (\kernel J_{i+1}) < \dim (\kernel J_i).
+\dim (\kernel J_{i+1}) < \dim (\kernel J_i)
 $$
-This result proves that under Asumption~(\ref{eq:asumption-1}), each added constraint 
+This result proves that under assumption~(\ref{eq:assumption-1}), each added constraint 
 is linearly independent from the 
 previous ones, and thus our algorithm terminates in a finite number of iterations.
 
 \vspace{0.2cm}
 
-\subsubsection{Note: about Asumption~(\ref{eq:asumption-1})}%
-Let us consider the following expression:
-$$
-\frac{\partial f}{\partial \xx}(\xx_{i+1})\p_i
-$$
-This expression represents the velocity of point $\po_2$ in the reference frame of $\body_1$ projected onto $\mathbf{u}$ along the motion of the robot defined by the following trajectory:
+\subsubsection{Note about assumption~(\ref{eq:assumption-1})}%
+\noindent
+Let us consider the following trajectory:
 \begin{equation}\label{eq:trajectory}
-\conf (t) = \xx_{i}(t_{coll\ i}) + t\, \alpha_i \p_{i}.
+\conf (t) = (\xx_{i} + t\, \alpha_i \p_{i}) (t_{coll\ i}), \ t \in [0,1]
 \end{equation}
-The motion is defined by taking a constant abscissa $t_{coll\ i}$ and be moving the 
-path along iterate $\p_i$. Note that configuration $\xx_{i+1}(t_{coll\ i})$ is 
-reached when $t=1$.
-This expression being equal to zero requires either
+where the motion is defined by taking a constant abscissa $\tcolli$ and by moving from the 
+path $\xx_i$ along the step $\p_i$. Note that configuration $\xx_{i+1}(t_{coll\ i})$ is reached when $t=1$.
+
+Thus the velocity of point $\po_2$ in the reference frame of $\body_1$ projected onto $\mathbf{u}$ along the motion of the robot is given by:
+$$
+\frac{\partial \conf}{\partial t}(t) = \alpha_i \frac{\partial f}{\partial \xx}(\xx_i + t\alpha_i\xx_{i+1})\p_i
+$$
+Therefore the following expressions
+% \frac{\partial \conf}{\partial t}(0) = \alpha_i \frac{\partial f}{\partial \xx}(\xx_{i})\p_i \ \text{and} \ \frac{\partial \conf}{\partial t}(1) = \alpha_i \frac{\partial f}{\partial \xx}(\xx_{i+1})\p_i
+$$
+\dot{\conf}(0) = \alpha_i \frac{\partial f}{\partial \xx}(\xx_{i})\p_i \ \ \text{and} \ \ \dot{\conf}(1) = \alpha_i \frac{\partial f}{\partial \xx}(\xx_{i+1})\p_i
+$$
+correspond to $\dot{\po_2}(\xx).\mathbf{u}$, respectively in configurations $\xx_{i}(t_{coll\ i})$ and $\xx_{i+1}(t_{coll\ i})$. The term $\dot{\conf}(1)$ being equal to zero requires either:
 \begin {enumerate}
 \item that $\po_1$ and $\po_2$ come to contact at zero velocity, or
 \item the velocity of $\po_2$ in the reference frame of $\body_1$ is orthogonal to 
@@ -589,22 +611,21 @@ $\mathbf{u}$ at contact ($t=1$).
 \end {enumerate}
 The first case is very unlikely and almost never encountered in real applications, 
 except if the user builds such a case on purpose.
-The second case may appear and can be noted by a rank loss of $\Jf_{i+1}$. In this 
-case, we do not directly insert the new constraint. Instead, we process intermediate 
+The second case may appear and can be noted by a rank loss of $\Jf_{i+1}$.
+Then we do not directly insert the new constraint. Instead, we process intermediate 
 iterations until the redundancy vanishes, as explained in function 
-\texttt{solveRedundantConstraint}.
+\texttt{findNewConstraint} and illustrated in (Figure~\ref{fig:convergence-diagram}).
 
 \begin{algorithm}[t]
 \begin{algorithmic}%[1] % line numerotation
 \INPUT{$\xx_{Free}$ latest collision-free path, $\xx_{Coll}$ current path with collisions, $\p$ current iteration step}
 \Require constraint $\frac{\partial f}{\partial \xx} (\xx_{Free})$ built from $\xx_{Coll}$ would produce a rank loss in constraint Jacobian $\Jf$
 \State $solved \gets false$
-\State $minReached \gets false$
 \While{($\textbf{not}(solved)$)}
-	\State $\p = \texttt{computeIterate}()$
-	\State $minReached = (||\p||<10^{-3} \textbf{ or } \alpha=1)$
+	%\State $\p = \texttt{computeIterate}()$
+	%\State $minReached = (||\p||<10^{-3} \textbf{ or } \alpha=1)$
 	\State $\xx \gets \xx_{Free} + 0.5\alpha\,\p$
-	\If{(\texttt{validatePath}($\xx_1$))}
+	\If{(\texttt{validatePath}($\xx$))}
 		\State $\xx_{Free} \gets \xx$
 	\Else
 		\State $\xx_{Coll} \gets \xx$
@@ -613,7 +634,9 @@ iterations until the redundancy vanishes, as explained in function
 	\State $solved \gets$ \texttt{isFullRank}($\Jf$ , $\frac{\partial f}{\partial \xx} (\xx_{Free})$)
 \EndWhile
 \end{algorithmic}
-\caption{\texttt{solveRedundantConstraint}()} \label{algo:solveRedundant}
+\caption{Description of \texttt{findNewConstraint}() which returns a linearly 
+independent constraint w.r.t. previous constraints stacked in $\Jf$.} 
+\label{algo:solveRedundant}
 \end{algorithm}
 
 After producing an intermediate iteration $\xx_{i+2}$ where $\alpha_i$ was 
@@ -639,21 +662,20 @@ on it, and the constraint is linearized around the latest free path.
 Doing so, either the new constraint makes the dimension of the kernel decrease, or 
 makes the configuration in collision ($\xx_{i+1}$ or $\xx_{i+2}$ depending on the 
 case above) and the latest collision-free path ($\xx_{i}$ or $\xx_{i+2}$) become 
-closer and closer (see (Figure~\ref{fig:convergence-diagram}) as an example). And 
-the continuity of $f$ implies that:
-$$
-\frac{\partial f}{\partial \xx}(\xx_i)\p_i \ \ \ \mbox{and}\ \ \ \frac{\partial f}{\partial \xx}(\xx_{i+1})\p_i
-$$
+closer and closer. And the continuity of $f$ implies that $\dot{\conf}(0)$ and 
+$\dot{\conf}(1)$
 converge toward the norm of the velocity of point $\po_2$ in the reference frame of 
 $\body_1$ along trajectory~(\ref{eq:trajectory}) when $\po_2$ and $\po_1$ come to 
-contact. We already handled this case previously, admitting that the velocity norm 
-would not vanish at $t=1$. Therefore, Asumption~(\ref{eq:asumption-1}) is verified.
-
+contact. We already handled this situation previously, admitting that the velocity norm 
+would not vanish at $t=1$. Therefore, assumption~(\ref{eq:assumption-1}) is verified.
+%$$
+%\frac{\partial f}{\partial \xx}(\xx_i)\p_i \ \ \ \mbox{and}\ \ \ \frac{\partial f}{\partial \xx}(\xx_{i+1})\p_i
+%$$
 
 
 \subsection{Algorithm}
 
-In this part we describe the GB path-optimizer (Algorithm~\ref{algo:gradient})
+In this section, the GB path-optimizer (Algorithm~\ref{algo:gradient}) is described
 according to the previous steps definitions. One difficulty here is to handle 
 the scalar parameter $\alpha$ determining how much of the computed step $\p$ will 
 be traveled through. Typically, we 
@@ -675,7 +697,7 @@ more risks of collision.
 		\State $noCollision \gets false$
 		\If{$(\alpha \neq 1)$}
 			\State \texttt{computeCollisionConstraint}($\xx_1$, $\xx_0$)
-			\State \texttt{solveRedundantConstraint}()
+			\State \texttt{findNewConstraint}()
 			\State \texttt{addCollisionConstraint}()
 			\State $\alpha \gets 1$
 		\Else
@@ -701,7 +723,8 @@ Note that even if the constraints are linearized, the algorithm converges.
 This part gathers optimization results performed on the planning software 
 Humanoid Path Planner~\cite{hpp}. Initial paths are obtained with two 
 kinds of probabilistic planners: Visibility-PRM~\cite{visibility-prm} and 
-RRT-connect~\cite{rrt-connect}.
+RRT-connect~\cite{rrt-connect}. Unless another value is given, $\alpha_{init}$ 
+is set to 0.2.
 
 \subsection{From 2D basic examples...}
 
@@ -709,27 +732,30 @@ RRT-connect~\cite{rrt-connect}.
 	\centering
 	\includegraphics[width=7.8cm]{contact_points6.pdf}
 	\includegraphics[width=8cm]{contact_points2potential.pdf}
-	\caption{Path-optimization results on 2D-ponctual robots, moving around 
+	\caption{Path-optimization results on 2D robots, moving around 
 	gray obstacles. Initial paths are dashed and crosses represent contact points 
 	$\po_c$ related to collision-constraints. Note that, on the left, the detour 
 	completely disappears.}
 	\label{2D_long}
 \end{figure}
 
-(Figure~\ref{2D_long}) shows the result of our optimizer on 2D cases. Represented collisions leading to constraints permit to understand how the path is kept out of the obstacles. Unfortunately, it is not possible in the GB method to choose at which distance of the obstacle the constraint must be created, as at some parts the robot is very close to obstacles.
+(Figure~\ref{2D_long}) shows the result of our optimizer on 2D cases. Contact points which have 
+led to constraints are represented. They permit to understand how the path is kept out of the obstacles. 
+Unfortunately, it is not possible in the GB method to choose at which distance of the obstacle 
+the constraint must be created, as at some parts the robot is very close to obstacles.
 
 Besides, these examples give a better understanding of how the tuning of 
 $\alpha_{init}$ 
 has to balance lot of iterations and relevant collision-constraint addition. For 
 example, if we alter a lot the initial path with a large gradient step and 
-compute the corresponding collisions, constraints will be chosen on a very-not 
-optimal path and will not be relevant w.r.t. the obstacles we wanted to 
-avoid.
+compute the corresponding collisions, constraints will be chosen on a 
+path closer-to-optimality but which is not relevant
+w.r.t. the obstacles we want to avoid.
 
 (Figure~\ref{local_box_optim}) illustrates a \textit{very long} path example that RS 
 or PRS will not manage to 
 optimize in an affordable time, because of probabilistically failing to sample 
-configurations in the box. GB succeeds to optimize the 
+configurations in the box. The GB method succeeds to optimize the 
 path contained in the box, with the following cost coefficients:
 $$
 \lambda_{i-1} = \frac{1}{\sqrt{(\conf_{i\,0}-\conf_{i-1\,0})^T \weight^2 
@@ -740,7 +766,7 @@ minimum as at
 initial path, represented by the waypoints ($\conf_{i\,0})_{1\leq i\leq wp+1}$.
 Without these coefficients, the path that minimizes the cost corresponds to a 
 straight line with the waypoints equidistantly allocated, which is not adapted for 
-the (Figure~\ref{local_box_optim}) type of problems with a local passage very
+(Figure~\ref{local_box_optim}) type of problems with a local passage very
 constrained by obstacles. Note that this cost is also working with all other 
 examples presented in this paper, and provides better quality results than the original cost.
 
@@ -761,11 +787,12 @@ examples presented in this paper, and provides better quality results than the o
 
 \subsection{To 3D complex problems}
 
-We also experiment our algorithm on more complex robots and environments. Unless another value is given, $\alpha_{init}$ is set to 0.2.
+We also experiment our algorithm on more complex robots and environments.
 
 \begin{algorithm}
-\begin{algorithmic}[1] % line numerotation
-\Procedure{randomShortcut}{$\xx$}
+\begin{algorithmic}%[1] % line numerotation
+\INPUT{Path to optimize $\xx$}
+\OUTPUT{Optimized collision-free path $\xx$}
    \State nbFailures $\gets 0$
    \While {$nbFailures < maxNbFailures$}
         \State $failure \gets true$
@@ -797,7 +824,6 @@ We also experiment our algorithm on more complex robots and environments. Unless
         \EndIf
       \EndWhile
     \Return $\xx$
-\EndProcedure
 \end{algorithmic}
 \caption{Random shortcut as adapted from~\cite{Sekhavat-Svestka1998} 
 Section~6.4.1. \texttt{steeringMethod} returns the linear interpolation between 
@@ -816,7 +842,7 @@ the result.}\label{algo:random-shortcut}
 	has just to 
 exchange the positions of its arms. The task is simple, however, in absence of 
 explicit indication, any probabilistic motion planner will compute a path that 
-makes the PR2 mobile base purposelessly moving. This is the case of RRT-connect 
+makes the PR2 mobile base purposelessly moving. This is the result of RRT-connect 
 algorithm (left). Path optimization is expected to remove unnecessary motions. 
 The popular RS algorithm fails in this case (middle). Our GB algorithm 
 succeeds (right).}
@@ -826,18 +852,18 @@ succeeds (right).}
 In the included video and (Figures~\ref{pr2_final},~\ref{fiad} 
 and~\ref{fig:trajectories}), we present multiple situations where the GB algorithm 
 is tested and compared to RS~\cite{randomShortcutHPP}
-(Algorithm~\ref{algo:random-shortcut}) and PRS ~\cite{partialrandomShortcutHPP} 
+(Algorithm~\ref{algo:random-shortcut}) and PRS~\cite{partialrandomShortcutHPP} 
 adapted from~\cite{Geraerts04clearancebased}.
 The termination condition of RS allows it to try 
 shortening the path until five iterations of non-improvement are reached 
 (corresponding to $maxNbFailures$ in (Algorithm~\ref{algo:random-shortcut})).
 For our implementation of PRS, first a shortcut is tried on each DOF between 
 $\conf_0$ and $\conf_{wp+1}$. 
-Then, for each DOF, configurations are shot as in 
-(Algorithm~\ref{algo:random-shortcut}) and the steering-method returns a path made by 
+Then, for each DOF, configurations are sampled as in 
+(Algorithm~\ref{algo:random-shortcut}). The steering-method returns a path made of 
 an interpolation on only 
-the current DOF and the previous subpath for other DOF. If this path is 
-collision-free, it is replaced as in RS. This process is also stopped when five 
+the current DOF and based on the previous subpath for other DOF. If this path is 
+collision-free, we replace it as in RS. This process is also stopped when five 
 iterations of non-improvement are reached.
 
 \vspace{0.4cm}
@@ -850,7 +876,7 @@ contains detours above and below the obstacle, as well as small superfluous
 motions in the hole. 
 Lengths of initial, GB optimized, and RS optimized paths are 
 respectively 23.4, 8.53 and 10.2. PRS fails to decrease the path length because in 
-this problem, all DOF are closely related to cross the hole. This behaviour was also 
+this problem, all DOF are closely related to cross the hole. This behavior was also 
 noticed and improve in the PRS implementation of~\cite{Geraerts04clearancebased}, 
 acting on a group of DOF. The GB optimizer manages to modify the puzzle trajectory 
 even in the hole, contrary to RS which simply copies the initial path when the 
@@ -862,11 +888,11 @@ trajectory gets near of the obstacle. $\alpha_{init}$ is reduced to 0.05 to slig
 On the double-arm problem, (Figure~\ref{fig:trajectories:double_arm}), one arm has 
 to get around a cylinder obstacle while the 
 other arm is relatively far from obstacles. As expected, the initial path given by 
-RRT-connect activates both arms to solve the problem. Contrary to RS, 
-GB manages to cancel the rotation of the free-arm while optimizing the 
+RRT-connect activates both arms to solve the problem. Unlike RS, 
+the GB optimizer manages to cancel the rotation of the free-arm while optimizing the 
 first arm motion, even if the second arm is still moving because of the translation 
 motion. The initial path length 5.17 is decreased to 4.55 by RS, to 4.06 by PRS and 
-to 2.77 by GB using three collision-constraints with the cylinder obstacle.
+to 2.77 by the GB method using three collision-constraints with the cylinder obstacle.
 
 
 \begin{figure}
@@ -881,7 +907,7 @@ to 2.77 by GB using three collision-constraints with the cylinder obstacle.
 	industrial problem, where initial and final configurations of the UR5 are 
 	constrained in boxes. Trajectories results 
 	are presented (bottom right): initial (RRT-connect) path in red, RS 
-	optimization in blue and GB optimization in green.}
+	optimization in blue and the GB optimization in green.}
 	\label{fiad}
 \end{figure}
 
@@ -890,26 +916,26 @@ Some problems are
 involving a 6-axis manipulator arm, also called UR5, equipped with a bar or a 
 gripper.
 In a relatively free environment (Figure~\ref{fig:trajectories:ur5}), 
-results from GB and RS are similar (path length are respectively 2.03 and 1.60). 
-Note also that the end-effector trajectory has completely changed from the initial 
-one, the robot is easily passing between the spheres, keeping its end-effector 
+results from our method and RS are similar (path length are respectively 2.03 and 1.60). 
+Note also that the end-effector trajectory is completely different from the initial 
+one: the robot is easily passing between the spheres, keeping its end-effector 
 above.
 
 % UR5-fiad
-For an UR5 working in a cluttered environment inspired from an industrial issue 
+For an UR5 working in a cluttered environment inspired by an industrial issue 
 (Figure~\ref{fiad}), path optimization efficiently returns a shorter solution, close 
 to the result of RS and to what can be observed in reality~\cite{factory-day-video}. 
 The initial path length 6.65 is decreased to 2.08 by RS, to 
-1.98 by GB and unchanged by PRS.
+1.98 by the GB optimizer and unchanged by PRS.
 
 % baxter:
 A problem involving a Baxter-like\footnote{A torso rotation was added.} robot 
-manipulating in an office environment is shown 
+manipulating in an office environment is presentated 
 (Figure~\ref{fig:trajectories:baxter}). The robot starts with its end-effectors 
 above the computer and has to 
 turn and reach the shelf. According to the left-hand trajectories quality (see the 
 video for the full motion) and path lengths, 9.10 (initial RRT-connect), 7.52 (RS), 
-8.41 (PRS) and 2.70 (GB), the GB optimizer is the most successfull in this case.
+8.41 (PRS) and 2.70 (GB), the GB optimizer is the most successful in this case.
 
 \vspace{0.4cm}
 
@@ -931,8 +957,7 @@ Whereas the GB optimized-path mainly
 results in moving the arms as expected (Figure~\ref{pr2_final} right), just creating 
 two collision-constraints between the arms. The PRS 
 result, only presented in the video, cancels the mobile base motion, but not all 
-unnecessary DOF. Moreover, the arms motion is very wide and not as optimized as in 
-the GB trajectory.
+unnecessary DOF. In addition, the arms motion is very wide and not as optimized as in the GB trajectory.
 
 % analysis PR2 in kitchen:
 We obtain similar results on the PR2 performing a manipulation task 
@@ -944,7 +969,7 @@ planner and improves the path quality
 just adding orthogonality constraints between the table and the 
 robot's arms and grippers. Thus, the robot just slightly moves 
 backward and uses its arms DOF to avoid the table, instead of 
-processing a large motion to get away from the table. With GB, the path length is 
+processing a large motion to get away from the table. With the GB algorithm, the path length is 
 downed to 3.15, against 5.47 for RS.
 Another example of PR2 working in the kitchen, going from the set to the fridge 
 door, is presented (Figure~\ref{fig:trajectories:kitchen2}) with the mobile base
@@ -955,9 +980,10 @@ trajectories. Here, GB and RS results are similar in terms of length and renderi
 Optimization computation time and path length averages are presented for 30 runs of 
 each example in (Table~\ref{tab:results}). In some cases $\alpha_{init}$ was 
 reduced to comply with very narrow passages, or increased in the opposite case. 
-It appears that, for non-high DOF examples, computation time is higher using the GB 
-optimization. The worst case shows up for the puzzle problem where the number of 
-constraints of GB is typically important and $\alpha_{init}$ reduced. Moreover in this case, robot and environment geometries are simple so computing numerous collision tests for random shortcut is not handicaping.
+On the one hand, for non-high DOF examples, it appears that computation time is higher using the GB 
+optimization. The worst case comes out for the puzzle problem where the number of 
+constraints of GB is significant and $\alpha_{init}$ reduced. 
+In addition, collision checking is rapidly processed in such basic problem geometry. This favors RS while the GB optimization spends time on the QP resolution to avoid collisions.
 On the other hand, our method almost always provides the shortest paths, whereas it 
 is not even the best criterion to quantify the parasite motions disappearance.
 Such results are the artefact of the termination conditions of RS and PRS, length 
@@ -966,7 +992,7 @@ easily gives up in some problems, such as the 2D sliding-robot, the
 UR5-with-spheres or the puzzle.
 Finally, the complete vanishing of the mobile base motion in the PRS and GB 
 optimized paths is highlighted in the right column of (Table~\ref{tab:results}). 
-Thus the problem addressed in the (Figure~\ref{decoupled_DOF_optimization}) is 
+Thus the problem addressed in (Figure~\ref{decoupled_DOF_optimization}) is 
 solved considering this DOF.
 
 
@@ -997,11 +1023,11 @@ solved considering this DOF.
 		\includegraphics[width=6.5cm,height=5.5cm]{baxter_orth_constr_results.png}
 		\label{fig:trajectories:baxter}
 	}
-  \caption{Trajectories of end-effectors, mobile bases or centers allong the 
+  \caption{Trajectories of end-effectors, mobile bases or centers along the 
   different paths: the initial path is represented in red, the RS optimized path in 
   blue and the GB optimized path in green. The full robots 
   motions can also be visualized in the joined video. The trajectories comparison 
-  highlights the optimization sucess of our method, which manages to deliver a 
+  highlights the optimization success of our method, which manages to deliver a 
   shorter or similar path compared to RS output}
   \label{fig:trajectories}
 \end{figure}
@@ -1070,16 +1096,22 @@ distance that is traveled by the robot mobile base during the different paths.
 
 
 \section{CONCLUSIONS}
-We managed to settle a path optimization for navigation and manipulation problems, and tested with various robots and environments. Our algorithm uses standard 
+We managed to settle a path optimization for navigation and manipulation problems, and tested it with various robots and environments. Our algorithm uses standard 
 numerical tools as collision checking, linearized one-dimensional constraint
 and QP resolution. It correlates them in a 
-simple but effective way, playing on the scalar iteration parameter. Moreover, 
+simple but effective way, and the algorithm structure is organized so that the convergence is guaranteed. Furthermore, 
 our method only requires collision checking, therefore geometry pre-processing or 
 offline optimization are not necessary to remain time-competitive. We demonstrate 
 that the optimizer may be 
-time-competitive compared to random shortcut in complex models where collision tests are handicaping, and proposes better quality paths, reducing the path length and removing unnecessary DOF motions. Our optimizer also manages to reduce a local detour in a long path while random shortcut methods will mostly fail.
+time-competitive compared to random shortcut in complex models where collision tests are time-consuming. 
+It also proposes better quality paths, reducing the path length and removing unnecessary DOF motions. 
+Finally, our optimizer manages to reduce a local detour in a long path while random shortcut methods will mostly fail.
 
-For future work, we have room for improvement.
+For future work, we have room for improvement: taking advantage of the sparsity of 
+the constraint Jacobian to reduce computation time. We may also adapt the iteration 
+scalar parameter from geometries considerations on the current path, e.g. a lower 
+bound of the distance between nearest objects, since this bound can be returned by 
+the collision checker.
 
 
 \section*{Funding}
