@@ -389,7 +389,7 @@ $$
 $$
 
 
-Let $\mbox{H}$ denote the constant Hessian of the cost function:
+From the gradient expression, we notice that the Hessian $\mbox{H}$ is constant:
 $$
 \mbox{H} = \left(\begin{array}{cccccc}
 (\lambda_{0}+\lambda_{1})\weight^2 & -\lambda_{1}\weight^2 & 0 & \cdots & & 0 \\
@@ -485,9 +485,7 @@ orthogonal direction of the encountered collision.
 
 In the collision-configuration $\xx_{i+1}(\tcolli)$, let $\po_c\in \real^3$ be a 
 contact point expressed in the global frame 
-(Figure~\ref{contact-points} left). We compute the respective positions $\po_1$ and 
-$\po_2$ of $\po_c$ in 
-the local frames of $\body_1$ and $\body_2$ (Figure~\ref{contact-points} right).
+(Figure~\ref{contact-points} left). We define $\po_1$ and $\po_2$ as the coordinates of $\po_c$ in the  respective local frames of $\body_1$ and $\body_2$ (Figure~\ref{contact-points} right).
 
 Let $M_1 \in SE(3)$ (resp. $M_2 \in SE(3)$) denote the homogeneous transformation 
 between frames of $\body_1$ (resp. $\body_2$) and the global frame in configuration 
@@ -505,7 +503,7 @@ Let $g$ be the function defined from $\CS$ to $\real$ by:
 $$
 g (\conf) = \left(M_{1}^{-1} (\conf) M_2 (\conf) \po_2 - \po_1 | \mathbf{u}\right)
 $$
-where $\po_1$ and $\po_2$ are computed in the configuration $\conf$. The function $g$ 
+The function $g$
 represents the projection of $\overrightarrow{\po_1\po_2}$ on $\mathbf{u}$ which is calculated 
 from the last collision-free path at abscissa $\tcolli$.
 
@@ -596,7 +594,7 @@ path $\xx_i$ along the step $\p_i$. Note that configuration $\xx_{i+1}(t_{coll\ 
 
 Thus the velocity of point $\po_2$ in the reference frame of $\body_1$ projected onto $\mathbf{u}$ along the motion of the robot is given by:
 $$
-\frac{\partial \conf}{\partial t}(t) = \alpha_i \frac{\partial f}{\partial \xx}(\xx_i + t\alpha_i\xx_{i+1})\p_i
+ \dot{\conf}(t) = \alpha_i \frac{\partial f}{\partial \xx}(\xx_i + t\alpha_i\xx_{i+1})\p_i
 $$
 Therefore the following expressions
 % \frac{\partial \conf}{\partial t}(0) = \alpha_i \frac{\partial f}{\partial \xx}(\xx_{i})\p_i \ \text{and} \ \frac{\partial \conf}{\partial t}(1) = \alpha_i \frac{\partial f}{\partial \xx}(\xx_{i+1})\p_i
@@ -655,7 +653,7 @@ on it, and the constraint is linearized around the latest free path.
 	(Algorithm~\ref{algo:solveRedundant}) will produce one intermediate step
 	$\xx$ (gray path and clear bodies). $\xx$ is collision-free and 
 	$\dot{\po_2}(\xx).\mathbf{u}\neq 0$ so the redundancy is solved and the
-	constraint will be linearized on $\xx$.}
+	constraint will be linearized around $\xx$.}
 	\label{fig:convergence-diagram}
 \end{figure}
 
@@ -679,9 +677,7 @@ In this section, the GB path-optimizer (Algorithm~\ref{algo:gradient}) is descri
 according to the previous steps definitions. One difficulty here is to handle 
 the scalar parameter $\alpha$ determining how much of the computed step $\p$ will 
 be traveled through. Typically, we 
-chose $\alpha_{init} = 0.2$ or 0.1 to process small steps. $\alpha_{init} = 0.5$ is 
-more encountered in the optimization literature, procuring larger steps but with 
-more risks of collision.
+chose $\alpha_{init} = 0.2$ or 0.1 to process small steps.
 
 \begin{algorithm}
 \begin{algorithmic}%[1] % line numerotation
