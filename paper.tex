@@ -144,6 +144,16 @@ will always fail to optimize the initial path, since it cannot decouple the
 robot degrees of freedom (DOF) on which the optimization occurs. This problem is 
 addressed by our method.
 
+
+On the other hand, numerical
+optimization methods like CHOMP~\cite{chompIjrr} can be used as a
+post-processing step. They have clear termination conditions, but collision
+avoidance is handled by inequality constraints sampled at many points along
+the trajectory. These methods therefore require a pre-processing step of the
+robot (and/or environment) model in order to make 
+it simpler:~\cite{chompIjrr} covers PR2 bodies with spheres, 
+while~\cite{convexOptimMotplan} needs to decompose objects into convex subsets.
+
 \begin{figure}
 	\centering
 	\includegraphics[width=7.5cm]{decoupled_DOF_optimization.pdf}
@@ -154,14 +164,6 @@ addressed by our method.
 	\label{decoupled_DOF_optimization}
 \end{figure}
 
-On the other hand, numerical
-optimization methods like CHOMP~\cite{chompIjrr} can be used as a
-post-processing step. They have clear termination conditions, but collision
-avoidance is handled by inequality constraints sampled at many points along
-the trajectory. These methods therefore require a pre-processing step of the
-robot (and/or environment) model in order to make 
-it simpler:~\cite{chompIjrr} covers PR2 bodies with spheres, 
-while~\cite{convexOptimMotplan} needs to decompose objects into convex subsets.
 
 Finally it should be noticed that optimality in robot motion is a notion that should be clarified. Most of the time motion planners provide an optimized motion, which is not optimal at all, but is the output of a given optimization method. When optimal motions exist, numerical
 algorithms mostly fail in accounting for their combinatorial structure. In addition, optimization algorithms bypass (not overcome) the question of the existence of optimal motions~\cite{LaumondOptim}. In that perspective, a path optimization algorithm has to be evaluated with respect to other existing optimization techniques, from qualitative properties and from computational performance.
@@ -407,7 +409,7 @@ $$
 We assume that the direct interpolation between the initial and final configurations contains collisions. An iteration is described as follow:
 \begin{equation}\label{eq:iteration-1}
 \begin{split}
-& \p_i =  -H^{-1} \nabla \cost(\xx_i)^{T} \\
+& \p_i =  -\mbox{H}^{-1} \nabla \cost(\xx_i)^{T} \\
 & \xx_{i+1} =  \xx_{i} + \alpha_i \p_i
 \end{split} 
 \end{equation}
@@ -677,7 +679,7 @@ would not vanish at $t=1$. Therefore, assumption~(\ref{eq:assumption-1}) is veri
 In this section, the GB path-optimizer (Algorithm~\ref{algo:gradient}) is described
 according to the previous steps definitions. One difficulty here is to handle 
 the scalar parameter $\alpha$ determining how much of the computed step $\p$ will 
-be traveled along. We choose $\alpha_{init} = 0.2$ or 0.1 to process small steps.
+be traveled along. We choose $\alpha_{init} = 0.2$ or 0.05 to process small steps.
 
 \begin{algorithm}
 \begin{algorithmic}%[1] % line numerotation
