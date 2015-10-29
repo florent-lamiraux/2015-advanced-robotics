@@ -289,8 +289,9 @@ space of the robot is denoted by $\CS\subset\real^n$.
 
 Note that the configuration of the robot belongs to a sub-manifold of $\real^n$.
 
-The velocity of each joint $J_i$, $1\leq i \leq m$ is defined by a vector of $
-\real^{p_i}$, where $p_i$ is the number of DOF of $J_i$. Note that 
+The velocity of each joint $J_i$, $1\leq i \leq m$,  belongs to the tangent space of 
+the joint configuration space, and is defined by a vector of $\real^{p_i}$, where 
+$p_i$ is the number of DOF of $J_i$. Note that
 the velocity vector does not necessarily have the same dimension as the 
 configuration vector.
 
@@ -406,15 +407,15 @@ $$
 We assume that the direct interpolation between the initial and final configurations contains collisions. An iteration is described as follow:
 \begin{equation}\label{eq:iteration-1}
 \begin{split}
-& \pii =  -H^{-1} \nabla \cost(\xx_i)^{T} \\
-& \xx_{i+1} =  \xx_{i} + \alpha_i \pii
+& \p_i =  -H^{-1} \nabla \cost(\xx_i)^{T} \\
+& \xx_{i+1} =  \xx_{i} + \alpha_i \p_i
 \end{split} 
 \end{equation}
 where $\alpha_i$ is a real valued parameter. Taking $\alpha_i=1$ yields the 
 unconstrained minimal cost path, i.e. all waypoints aligned on the straight line 
-between $q_0$ and $q_{wp+1}$. Since this solution is in collision, we set 
-$\alpha_i = \alpha$ 
-where $\alpha$ is a parameter that will be explained in the algorithm section.
+between $\conf_0$ and $\conf_{wp+1}$. Since this solution is in collision, we set 
+$\alpha_i = \alpha_{init}$
+where $\alpha_{init}$ is a parameter in interval $[0,1]$.
 
 We iterate step~(\ref{eq:iteration-1}) until path $\xx_{i+1}$ is in collision. This 
 corresponds to the unconstrained function \texttt{computeIterate} in 
@@ -676,8 +677,7 @@ would not vanish at $t=1$. Therefore, assumption~(\ref{eq:assumption-1}) is veri
 In this section, the GB path-optimizer (Algorithm~\ref{algo:gradient}) is described
 according to the previous steps definitions. One difficulty here is to handle 
 the scalar parameter $\alpha$ determining how much of the computed step $\p$ will 
-be traveled through. Typically, we 
-chose $\alpha_{init} = 0.2$ or 0.1 to process small steps.
+be traveled along. We choose $\alpha_{init} = 0.2$ or 0.1 to process small steps.
 
 \begin{algorithm}
 \begin{algorithmic}%[1] % line numerotation
