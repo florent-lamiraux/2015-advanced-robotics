@@ -733,7 +733,8 @@
 \def\fps@figure{tbp}
 \def\ftype@figure{1}
 \def\ext@figure{lof}
-\def\fnum@figure{Figure~\thefigure.}%
+%\def\fnum@figure{Figure~\thefigure.}%  % PERSONAL COMMIT !!
+\def\fnum@figure{Figure~\thefigure}%
 \newenvironment{figure}{\figcaptionfont\@float{figure}}{\end@float}
 \newenvironment{figure*}{\figcaptionfont\@dblfloat{figure}}{\end@dblfloat}
 %
