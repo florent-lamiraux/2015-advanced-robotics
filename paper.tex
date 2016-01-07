@@ -97,6 +97,9 @@ e.g. a manipulator arm filling boxes and a PR2 robot working in a kitchen
 environment. Comparisons with a random shortcut optimizer and a partial 
 shortcut have also been studied.
 
+% one line version:
+%Most algorithms in probabilistic sampling-based path planning compute collision-free paths made of straight line segments lying in the configuration space. Due to the randomness of sampling, the paths make detours that need to be optimized. The contribution of this paper is to propose a basic gradient-based (GB) algorithm that transforms a polygonal collision-free path into a shorter one. While requiring only collision checking, and not any time-consuming obstacle distance computation nor geometry simplification, we constrain only part of the configuration variables that may cause a collision, and not entire configurations. Thus parasite motions that are not useful for the problem resolution are reduced without any assumption. Experimental results include navigation and manipulation tasks, e.g. a manipulator arm filling boxes and a PR2 robot working in a kitchen environment. Comparisons with a random shortcut optimizer and a partial shortcut have also been studied.
+
 % few parameter tuning REMOVED
 
 \medskip
@@ -139,8 +142,8 @@ popular~\cite{Sekhavat-Svestka1998,Geraerts04clearancebased,HauserFastSmooth}.
 However, RS requires fine 
 tuning of the termination condition and is no efficient for long 
 trajectories where only a minor part needs to be optimized, 
-as in (Figure~\ref{local_box_optim}).
-(Figure~\ref{decoupled_DOF_optimization}) presents another situation where RS 
+as in Figure~\ref{local_box_optim}.
+Figure~\ref{decoupled_DOF_optimization} presents another situation where RS 
 will always fail to optimize the initial path, since it cannot decouple the 
 robot degrees of freedom (DOF) on which the optimization occurs. This problem is 
 addressed by our method.
@@ -241,7 +244,7 @@ locally optimal, and is not addressing high-DOF
 problems.~\cite{Geraerts04clearancebased} is 
 using medial axis retraction for clearance and a PRS (shortcut is applied only 
 on some random DOF) 
-which can address the problem of (Figure~\ref{decoupled_DOF_optimization}). 
+which can address the problem of Figure~\ref{decoupled_DOF_optimization}. 
 However it is 
 relatively slower than RS, and~\cite{Geraerts04clearancebased} only investigates 
 it for freeflyer robots. 
@@ -254,7 +257,7 @@ iteration is detected in collision, instead of trying to constantly satisfy
 distance constraints. Unlike our method however, collision constraints are 
 handled by interpolating configurations which, at some points of the trajectory, 
 freeze the whole robot configuration instead of a pertinent subpart. Thus, this 
-method cannot solve (Figure~\ref{decoupled_DOF_optimization}) issue.
+method cannot solve Figure~\ref{decoupled_DOF_optimization} issue.
 
 
 \section{PATH OPTIMIZATION} \label{section:path_optim}
@@ -461,7 +464,7 @@ $$
 
 \subsubsection{New constraint}
 
-As illustrated in (Figure~\ref{optim_grad}), let 
+As illustrated in Figure~\ref{optim_grad}, let 
 us denote by $\tcolli$ the abscissa of the first collision detected on path 
 $\xx_{i+1}$, which previous iteration $\xx_i$ was collision-free. Thus in 
 configuration $\xx_{i+1}(\tcolli)$ a collision has been 
@@ -633,7 +636,7 @@ except if the user builds such a case on purpose.
 The second case may appear and can be noted by a rank loss of $\Jf_{i+1}$.
 Then we do not directly insert the new constraint. Instead, we process intermediate 
 iterations until the redundancy vanishes, as explained in function 
-\texttt{findNewConstraint} in (Algorithm~\ref{algo:solveRedundant}), and illustrated in (Figure~\ref{fig:convergence-diagram}).
+\texttt{findNewConstraint} in (Algorithm~\ref{algo:solveRedundant}), and illustrated in Figure~\ref{fig:convergence-diagram}.
 
 
 
@@ -759,7 +762,7 @@ is set to 0.2.
 	\label{2D_long}
 \end{figure}
 
-(Figure~\ref{2D_long}) shows the result of our optimizer on 2D cases. Contact points which have 
+Figure~\ref{2D_long} shows the result of our optimizer on 2D cases. Contact points which have 
 led to constraints are represented. They permit to understand how the path is kept out of the obstacles. 
 Unfortunately, it is not possible in the GB method to choose at which distance of the obstacle 
 the constraint must be created, since at some parts the robot is very close to obstacles.
@@ -772,7 +775,7 @@ compute the corresponding collisions, constraints will be chosen on a
 path closer-to-optimality but which is not relevant
 w.r.t. the obstacles we want to avoid.
 
-(Figure~\ref{local_box_optim}) illustrates a \textit{very long} path example which RS 
+Figure~\ref{local_box_optim} illustrates a \textit{very long} path example which RS 
 or PRS will not manage to 
 optimize in an affordable time, because of probabilistically failing to sample 
 configurations in the box. The GB method succeeds to optimize the 
@@ -786,7 +789,7 @@ minimum as at
 initial path, represented by the waypoints ($\conf_{i\,0})_{1\leq i\leq wp+1}$.
 Without these coefficients, the path that minimizes the cost corresponds to a 
 straight line with the waypoints equidistantly allocated. This is not relevant for 
-(Figure~\ref{local_box_optim}) type of problems where a local passage is very
+Figure~\ref{local_box_optim} type of problems where a local passage is very
 constrained by obstacles. Note that this cost is also working with all other 
 examples presented in this paper, and provides better quality results than the original cost.
 
@@ -867,8 +870,8 @@ succeeds (right).}
 \end{figure}
 
 We also experiment our algorithm on more complex robots and environments.
-In the included video and (Figures~\ref{pr2_final},~\ref{fiad} 
-and~\ref{fig:trajectories}), we present multiple situations where the GB algorithm 
+In the included video and Figures~\ref{pr2_final},~\ref{fiad} 
+and~\ref{fig:trajectories}, we present multiple situations where the GB algorithm 
 is tested and compared to RS~\cite{randomShortcutHPP}
 (Algorithm~\ref{algo:random-shortcut}) and PRS~\cite{partialrandomShortcutHPP} 
 adapted from~\cite{Geraerts04clearancebased}.
@@ -888,7 +891,7 @@ iterations of non-improvement are reached.
 % freeflyer puzzle
 Before entering the manipulator examples, the GB algorithm is analyzed 
 on a popular problem in the motion planning literature: a freeflyer puzzle, 
-corresponding to (Figure~\ref{fig:trajectories:puzzle}). The 
+corresponding to Figure~\ref{fig:trajectories:puzzle}. The 
 puzzle has to cross down the 
 obstacle using the hole in the middle. The initial path planned with Visibility-PRM 
 contains detours above and below the obstacle, as well as small superfluous
@@ -904,7 +907,7 @@ trajectory gets near of the obstacle. $\alpha_{init}$ is reduced to 0.05 to slig
 \vspace{0.4cm}
 
 % double-arm:
-In the double-arm situation, (Figure~\ref{fig:trajectories:double_arm}), one arm has 
+In the double-arm situation, Figure~\ref{fig:trajectories:double_arm}, one arm has 
 to get around a cylinder obstacle while the 
 other arm is relatively far from obstacles. As expected, the initial path given by 
 RRT-connect activates both arms to solve the problem. Unlike RS, 
@@ -934,7 +937,7 @@ to 2.77 by the GB method using three collision-constraints with the cylinder obs
 Some problems are 
 involving a 6-axis manipulator arm, also called UR5, equipped with a bar or a 
 gripper.
-In a relatively free environment (Figure~\ref{fig:trajectories:ur5}), 
+In a relatively free environment represented in Figure~\ref{fig:trajectories:ur5}, 
 results from our method and RS are similar (path length are respectively 2.03 and 1.60). 
 Note also that the end-effector trajectory is completely different from the initial 
 one: the robot is easily passing between the spheres, keeping its end-effector 
@@ -942,15 +945,15 @@ above.
 
 % UR5-fiad
 For an UR5 working in a cluttered environment inspired by an industrial issue 
-(Figure~\ref{fiad}), path optimization efficiently returns a shorter solution, close 
+Figure~\ref{fiad}, path optimization efficiently returns a shorter solution, close 
 to the result of RS and to what can be observed in reality~\cite{factory-day-video}. 
 The initial path length 6.65 is decreased to 2.08 by RS, to 
 1.98 by the GB optimizer and unchanged by PRS.
 
 % baxter:
 A problem involving a Baxter-like\footnote{A torso rotation was added.} robot 
-manipulating in an office environment is presented 
-(Figure~\ref{fig:trajectories:baxter}). The robot starts with its end-effectors 
+manipulating in an office environment is presented in
+Figure~\ref{fig:trajectories:baxter}. The robot starts with its end-effectors 
 above the computer and has to 
 turn and reach the shelf. According to the left-hand trajectories quality (see the 
 video for the full motion) and path lengths, 9.10 (initial RRT-connect), 7.52 (RS), 
@@ -963,7 +966,7 @@ results are better in terms of path quality, as a result of the parasite
 DOF motions removal.
 
 % analysis PR2 alone:
-In the example shown (Figure~\ref{pr2_final}) and in the video, the mobile 
+In the example shown Figure~\ref{pr2_final} and in the video, the mobile 
 40-DOF PR2 simply has to cross its arms from 
 the left arm up position to the right arm up one, without any assumption about the group of DOF to activate (i.e. no DOF is locked). 
 The RRT-connect planner 
@@ -975,13 +978,13 @@ uses, resulting in a path length of 4.08.
 Whereas the GB optimized-path mainly 
 results in moving the arms as expected (Figure~\ref{pr2_final} right), just creating 
 two collision-constraints between the arms. In the PRS 
-result, only presented in the video, the mobile base motion is canceled. However, this is note the case for other unnecessary DOF motions. In addition, the arms motion is very wide and not as optimized as in the GB trajectory.
+result, only presented in the video, the mobile base motion is canceled. However, this is not the case for other unnecessary DOF motions. In addition, the arms motion is very wide and not as optimized as in the GB trajectory.
 
 % analysis PR2 in kitchen:
 We obtain similar results on the PR2 performing manipulation tasks 
 in a kitchen environment.
 Firstly, the robot moves its hands from the top to the bottom of a table.
-The different trajectories of the right gripper are indicated in (Figure~\ref{fig:trajectories:kitchen1}).
+The different trajectories of the right gripper are indicated in Figure~\ref{fig:trajectories:kitchen1}.
 Our optimizer manages to reduce the initial path length 12.7 from visibility-PRM 
 and improves the path quality 
 just adding constraints between the table and the 
@@ -990,7 +993,7 @@ backward and uses its arms DOF to avoid the table, instead of
 processing a large motion to get away from the table. With the GB algorithm, the path length is 
 reduced to 3.15, against 5.47 for RS.
 Secondly, another example of PR2 going from the set to the fridge 
-door is presented (Figure~\ref{fig:trajectories:kitchen2}) with the mobile base
+door is presented Figure~\ref{fig:trajectories:kitchen2} with the mobile base
 trajectories. Here, GB and RS results are similar in terms of length and rendering.
 
 \vspace{0.4cm}
@@ -1010,7 +1013,7 @@ easily gives up in some problems, such as the 2D sliding-robot, the
 UR5-with-spheres or the puzzle.
 Finally, the complete vanishing of the mobile base motion in the PRS and GB 
 optimized paths is highlighted in the right column of (Table~\ref{tab:results}). 
-Thus the issue addressed in (Figure~\ref{decoupled_DOF_optimization}) is 
+Thus the issue addressed in Figure~\ref{decoupled_DOF_optimization} is 
 solved considering this DOF.
 
 
