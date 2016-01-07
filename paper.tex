@@ -138,7 +138,7 @@ method.
 
 For this shortening purpose, random shortcut (RS) methods are
 still very 
-popular~\cite{Sekhavat-Svestka1998,Geraerts04clearancebased,HauserFastSmooth}. 
+popular~\cite{Sekhavat-Svestka1998,GeraertsIJRR07,HauserFastSmooth}. 
 However, RS requires fine 
 tuning of the termination condition and is no efficient for long 
 trajectories where only a minor part needs to be optimized, 
@@ -241,12 +241,12 @@ Also based on random shooting,~\cite{Guernane2011} is guiding
 configuration-generation with local holonomic considerations. 
 Nevertheless this method remains only 
 locally optimal, and is not addressing high-DOF 
-problems.~\cite{Geraerts04clearancebased} is 
+problems.~\cite{GeraertsIJRR07} is 
 using medial axis retraction for clearance and a PRS (shortcut is applied only 
 on some random DOF) 
 which can address the problem of Figure~\ref{decoupled_DOF_optimization}. 
 However it is 
-relatively slower than RS, and~\cite{Geraerts04clearancebased} only investigates 
+relatively slower than RS, and~\cite{GeraertsIJRR07} only investigates 
 it for freeflyer robots. 
 Furthermore PRS is not taking advantage of information returned by 
 the checker of which links are colliding, in order to guide the selection of a relevant group of DOF to shortcut.
@@ -874,7 +874,7 @@ In the included video and Figures~\ref{pr2_final},~\ref{fiad}
 and~\ref{fig:trajectories}, we present multiple situations where the GB algorithm 
 is tested and compared to RS~\cite{randomShortcutHPP}
 (Algorithm~\ref{algo:random-shortcut}) and PRS~\cite{partialrandomShortcutHPP} 
-adapted from~\cite{Geraerts04clearancebased}.
+adapted from~\cite{GeraertsIJRR07}.
 The termination condition of RS allows it to try 
 shortening the path until five iterations of non-improvement are reached. 
 This corresponds to $maxNbFailures$ in (Algorithm~\ref{algo:random-shortcut}).
@@ -899,7 +899,7 @@ motions in the hole.
 Lengths of initial, GB optimized, and RS optimized paths are 
 respectively 23.4, 8.53 and 10.2. PRS fails to decrease the path length because in 
 this problem, all DOF are closely related to cross the hole. This behavior was also 
-noticed and improved in the PRS implementation of~\cite{Geraerts04clearancebased}, 
+noticed and improved in the PRS implementation of~\cite{GeraertsIJRR07}, 
 acting on a group of DOF. The GB optimizer manages to modify the puzzle trajectory 
 even in the hole, contrary to RS which simply copies the initial path when the 
 trajectory gets near of the obstacle. $\alpha_{init}$ is reduced to 0.05 to slightly modify the very constrained trajectory at each iteration.
