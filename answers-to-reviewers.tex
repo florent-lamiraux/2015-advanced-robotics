@@ -1,0 +1,261 @@
+\documentclass{scrartcl}
+\usepackage[svgnames]{xcolor}
+%\usepackage{biblatex}
+\usepackage{tikz}
+%\include{tikz_commands}
+\usetikzlibrary{patterns}
+
+\newcommand{\todo}{\textcolor{red}{TODO}}
+
+%\bibliographystyle{unsrt}
+%\bibliographystyle{IEEEtran}
+\bibliographystyle{tADR}
+\bibliography{paper}
+%\bibliography{IEEEabrv,paper}
+
+\begin{document}
+
+\title{A simple path-optimization method for motion planning}
+\author{M. Campana, F. Lamiraux and J.-P. Laumond}
+\date{Answer to reviewers}
+\maketitle
+
+The authors would like to thank the editor and the reviewers for their helpful comments and remarks.
+They have been taken into account in this revised version of the manuscript.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Editor}
+
+\hrulefill\\
+
+\subsection{Comment}
+\hrulefill\\
+
+Please revise the paper based on the comments, esp. the ones related to fair comparisons and other issues.
+
+\rule{\linewidth}{.1pt}
+\textbf{Answer}:
+
+The authors took into account all the remarks made by the editor and reviewers.
+We improved the clarity of the paper and the consistency of the notation.
+
+We would like to briefly restate here why we think the paper is showing substantial contribution with respect to [10].
+When testing [10] on the HRP-2 located in LAAS, Toulouse the performances of the algorithm were really bad: limited to 10 cm/s in the sagittal plan, 
+few centimeters/s sideways, rotational velocity were really small, and motion coupling X and Y velocities were not possible.
+It is shown in the new companion video. 
+The introduction of the dynamical filter is now allowing us to have 30 cm/s forward, achieve motion with strong X-Y velocities.
+The improvement is also shown in the new video.
+
+The theoretical contribution in using a nonlinear formulation allow us to easily integrates obstacle in the system without resorting to any preprocessing
+which would be necessary when using linear MPC approaches.
+We do believe that this formulation might be applicable to other situations and that it will be very helpful for other application such as visual-servoing.
+ 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Reviewer 1}
+\label{r2}
+\hrulefill\\
+
+\subsection{Comment 1}
+\hrulefill\\
+
+Title:
+I do not see why the authors have named it “A simple path optimization method” as it is significantly more complex than the classical random sampling based methods. A title with something like “A gradiant based optimization method…” would be much more fitting in my view.
+
+\rule{\linewidth}{.1pt}
+\textbf{Answer}:
+
+%The authors agree with the reviewers that this sentence should be modified as it is unclear.
+We thank the reviewer for the suggestion. The proposed title is indeed much more precise. We changed the title accordingly.
+
+\subsection{Comment 2}
+\hrulefill\\
+
+Introduction: 
+It would be very nice with a discussion of what optimal means. Optimal can be with respect to path length (the classical criteria also used in this paper), but could just as well be optimal with respect to execution time, where the number of via points and the clearance (allowing for larger blends) are important factors. Optimal could also depend on some task specific objectives. 
+
+\rule{\linewidth}{.1pt}
+\textbf{Answer}:
+
+We have developed the meaning of optimality, and we refer to a recent paper ACM-Com by one of the author.
+
+Concerning the choice to optimize the path length, we... by choosing the length we get a quadratic criterion, which is easier blablabla...
+
+\subsection{Comment 3}
+\hrulefill\\
+
+The introduction contains a reference to figure 6, which is in the results section. This long reference forces the reader to flip many pages back and forth. Please either just explain the content or put the figure earlier.
+
+\rule{\linewidth}{.1pt}
+\textbf{Answer}:
+
+As suggested, the figure was moved to the introduction.
+
+\subsection{Comment 4}
+\hrulefill\\
+
+Related work: 
+The work in [11] is also described in an IJRR paper of the same authors. This paper could be cited as well.
+
+\rule{\linewidth}{.1pt}
+\textbf{Answer}:
+
+As suggested, the reference has been changed to cite the journal paper.
+
+\subsection{Comment 5}
+\hrulefill\\
+
+Section 3:
+The paper starts describing the details of the algorithm and reference to algorithm 2 placed several pages later. It would make the paper more readable if the overall algorithm was presented earlier making the reader aware of where the components would be used before describing them. This would also mean that the reader does not have to flip back and forth all the time.
+
+\rule{\linewidth}{.1pt}
+\textbf{Answer}:
+
+We understand that starting to define the algorithm's functions and reference to it too early is confusing. To enhance it, we choose to decouple the algorithm from the problem definition, and define the functions in the algorithm section. This method may seem redundant but avoid the reader to flip back and forth to find the functions definitions.
+Furthermore, we prefer to not introduce the algorithm earlier because .... \todo
+
+\subsection{Comment 6}
+\hrulefill\\
+
+Section 3.5.1:
+This section does not read a nicely as the previous. Simplifying the notation by using sub/super scripts to define the reference frame of points rather than having the long expression for u, may help a bit.
+
+\rule{\linewidth}{.1pt}
+\textbf{Answer}:
+
+ANSWER
+
+\subsection{Comment 7}
+\hrulefill\\
+
+Results:
+The authors only compares their approach with random shortcut and partial random shortcut, but omit the standard path pruning technique also described in [11]. This technique works excellent for the special case in Figure 6. 
+
+\rule{\linewidth}{.1pt}
+\textbf{Answer}:
+
+ANSWER
+It is true that in the case of Figure 6, Prune is complementary to random shortcut, but this method, used alone, has also it's counter-examples, as the one presented in Figure 1 (and the PR2-crossing-arms Figure \todo).
+
+\subsection{Comment 8}
+\hrulefill\\
+
+In the paper the authors state that it can be hard to select the stopping criteria of the random short cutting algorithms, for which the authors have selected five iterations with non-improvement. Looking at the time it takes before the optimization algorithms terminates (Table 2) it appears that this criterion is too harsh as the PRS and RS in many cases terminates significantly before the GB based method. To show if their method is indeed more efficient they should try to let the RS and PRS run for the same amount of time as the GB method. It would also be nice if Table 2 would include the number of iterations and potentially selected plots showing how the path length decreases as a function of time/iterations.
+
+\rule{\linewidth}{.1pt}
+\textbf{Answer}:
+
+ANSWER
+
+\subsection{Comment 9}
+\hrulefill\\
+
+Related to my previous comment about path pruning, then I would generally recommend people to use a combination of the deterministic path pruning followed by random short cut algorithm, as this in my experience performs better (in terms of how much it can optimize in a given time) then using just short cutting.
+
+
+\rule{\linewidth}{.1pt}
+\textbf{Answer}:
+
+ANSWER
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Reviewer 2}
+
+\subsection{Comment}
+\hrulefill\\
+
+
+It looks that the conference version of this paper [1] is not cited in the main text though it appears in the Reference section.  Please add the citation in an appropriate place.
+
+[1] Campana M, Lamiraux F, Laumond JP. A simple path optimization method for motion planning. https:
+//hal.archives-ouvertes.fr/hal-01220048. 2015.
+
+\rule{\linewidth}{.1pt}
+\textbf{Answer}:
+
+We removed the reference.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Reviewer 3}
+
+\subsection{Comment 1}
+\hrulefill\\
+
+1) Notation and clarity of the presentation:
+
+When introducing the Jacobian of f, at no point has f been introduced as the constraint function. I think in general the problem should be introduced as an optimization problem, what is the objective, what are the constraints, what simplifications will be made.
+
+\rule{\linewidth}{.1pt}
+\textbf{Answer}:
+
+ANSWER
+
+\subsection{Comment 2}
+\hrulefill\\
+
+In that regard it would be nice to comment the Newton method, for example there exists many methods to select alpha. Having a constant alpha the most naïve approach.
+
+\rule{\linewidth}{.1pt}
+\textbf{Answer}:
+
+ANSWER
+
+\subsection{Comment 3}
+\hrulefill\\
+
+I wonder if the discussion concerning the configuration space, which is well done by the way, is of importance here, it is a perquisite in the robotics community.
+
+\rule{\linewidth}{.1pt}
+\textbf{Answer}:
+
+ANSWER
+
+\subsection{Comment 4}
+\hrulefill\\
+
+The iteration index notation and the time index use the same letter (i), making it difficult to follow. The p variable is sometimes called back with mention of what it is.
+
+\rule{\linewidth}{.1pt}
+\textbf{Answer}:
+
+ANSWER
+
+\subsection{Comment 5}
+\hrulefill\\
+
+The kernel discussion, and velocity discussion are a bit breve and unclear for the reader.
+
+\rule{\linewidth}{.1pt}
+\textbf{Answer}:
+
+ANSWER
+%The authors agree with the reviewers that this part should be modified as it is unclear.
+
+\subsection{Comment 6}
+\hrulefill\\
+
+2) Too few and unfair comparisons
+
+The experimental section leaves the impression that the comparisons with other methods are either giving the advantage to the state-of-the-art or, simply unfair. 
+
+Tuning the shortcut method by changing the distribution of samples along the path drastically changes the converging behavior, so choosing '5 non improving iterations' as the stopping criterion is very arbitrary. And it is the case in the results that the GB method beats the other methods using 1000 times the budget allocated to the other methods... I think reducing the comparison to one number in this case does not allow the reader to get a fair estimate of the convergence rate. A common criterion to be used is simply a max iteration count, which would already be fairer, but in order to not have these criteria influence the comparison, why not plot the averaged convergence curves?
+
+\rule{\linewidth}{.1pt}
+\textbf{Answer}:
+
+ANSWER
+
+\subsection{Comment 7}
+\hrulefill\\
+
+Otherwise it would be interesting to see the alpha parameter being discussed at that point in the paper (with experimental results to back up the discussion).
+
+\rule{\linewidth}{.1pt}
+\textbf{Answer}:
+
+ANSWER
+
+\end{document}
+
+
