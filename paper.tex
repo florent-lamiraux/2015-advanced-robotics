@@ -55,7 +55,8 @@
 \newcommand\cost{C}
 \newcommand\weight{W}
 \newcommand\translation{\mathbf{t}}
-\newcommand\tcolli{t_{coll\ i}}
+%\newcommand\tcolli{t_{coll\ i}}
+\newcommand\tcolli{\kappa_i}
 \newcommand\po{\mathbf{po}}
 \newcommand\Jf{{J_f}}
 \newcommand\kernel{\mbox{Ker }}
@@ -66,10 +67,7 @@
 
 
 
-\title{A simple path optimization method for motion planning$^{1}$ \thanks{$^{1}$Note for the reviewers: 
-This paper is an extended version of a paper submitted to IEEE ICRA 2016~\cite{pathOptimICRA_HAL}. The 
-current version includes a problem formulation, a convergence analysis and many experimental results (including an 
-industrial example) which are absent from the conference version.}}	
+\title{\textcolor{blue}{A gradient-based optimization method for motion planning}$^{1}$}
 
 \author{Myl\`{e}ne Campana$^{\ast}$ \thanks{$^\ast$Corresponding author. Email: \href{mailto:mcampana@laas.fr}{mcampana@laas.fr}}, Florent Lamiraux and Jean-Paul Laumond
 \\\vspace{6pt}
@@ -136,13 +134,27 @@ planning step. Note that we do not address path planning, but that we take the
 result of a probabilistic motion planner as the input to our path optimization 
 method.
 
+\textcolor{blue}{Definition of what could be optimized (path length, execution time, number of via points, ...}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=10cm]{local_box_optim2.pdf}
+	\caption{Case of a long initial path (above) containing a small part 
+	that can 
+	be optimized (below). Random shortcut is unlikely to optimize the initial 
+	dashed part containing detours in the box, whereas our method 
+	succeeds (in blue). This type of issue is common in navigation problems, in 
+	environments with long corridors.}
+	\label{local_box_optim}
+\end{figure}
+
 For this shortening purpose, random shortcut (RS) methods are
 still very 
 popular~\cite{Sekhavat-Svestka1998,GeraertsIJRR07,HauserFastSmooth}. 
 However, RS requires fine 
 tuning of the termination condition and is no efficient for long 
 trajectories where only a minor part needs to be optimized, 
-as in Figure~\ref{local_box_optim}.
+as in \textcolor{blue}{Figure~\ref{local_box_optim}}.
 Figure~\ref{decoupled_DOF_optimization} presents another situation where RS 
 will always fail to optimize the initial path, since it cannot decouple the 
 robot degrees of freedom (DOF) on which the optimization occurs. This problem is 
@@ -167,6 +179,7 @@ while~\cite{convexOptimMotplan} needs to decompose objects into convex subsets.
 	containing $\conf_{init}$ and $\conf_{final}$.}
 	\label{decoupled_DOF_optimization}
 \end{figure}
+
 
 
 Finally it should be noticed that optimality in robot motion is a notion that should be clarified. Most of the 
@@ -265,8 +278,7 @@ method cannot solve Figure~\ref{decoupled_DOF_optimization} issue.
 \subsection {Kinematic chain}
 
 A robot is defined by a kinematic chain composed of a tree of joints. We denote 
-by $(J_1,\cdots,J_m)$ the ordered list of joints. Each joint $J_i$, $1\leq i\leq 
-m$ is represented by a mapping from a sub-manifold of $\real^{n_i}$, where $n_i$ 
+by $(J_1,\cdots,J_m)$ the ordered list of joints. Each joint $J_i$, $i=1\cdots m$, is represented by a mapping from a sub-manifold of $\real^{n_i}$, where $n_i$ 
 is the dimension of $J_i$ in the configuration space, to the space 
 of rigid-body motions $SE(3)$. The rigid-body motion is the position of the joint 
 in the frame of its parent. In the examples presented in this paper, we consider four 
@@ -362,8 +374,9 @@ Each path $\xx$ is a mapping from
 interval $[0,1]$ into $\CS$: $\xx(0) = q_0$, $\xx(1) = q_{wp+1}$.
 Finally, we use a continuous 
 collision checker inspired of~\cite{SchwarzerExactCollision} to validate our 
-paths and to return the first colliding configuration along a path. This stage 
-corresponds to \texttt{validatePath} in (Algorithm~\ref{algo:gradient}), which returns $true$ if the given path is collision-free.
+paths and to return the first colliding configuration 
+\textcolor{blue}{and its abcissa} along a path. \textcolor{blue}{This stage 
+is handled by a function \texttt{validatePath}, which returns $true$ if the given path is collision-free}.
 
 \subsubsection{Cost}
 Let $W\in\real^{p\times p}$ be a diagonal matrix of weights:
@@ -389,11 +402,11 @@ moved by the joint to the center of the joint, in a given configuration.
 Given $\conf_0$ and $\conf_{wp+1}$ fixed, the cost we want to minimize is defined 
 by
 $$
-\cost (\xx) \triangleq \frac{1}{2}\sum_{i=1}^{wp+1} \lambda_{i-1} \|\conf_{i}-\conf_{i-1}\|_{W}
+\cost (\xx) \triangleq \frac{1}{2}\sum_{k=1}^{wp+1} \lambda_{k-1} \|\conf_{k}-\conf_{k-1}\|_{W}
 ^{2}
 $$
-where the $\lambda_{i-1}$ coefficients will be explained in the results 
-section. For now it is assumed that $(\lambda_{i-1})_{1\leq i\leq wp+1}=1$. Note that 
+where the $\lambda_{k-1}$ coefficients will be explained in the results 
+section. For now it is assumed that $(\lambda_{k-1})_{k=1\cdots wp+1}=1$. Note that 
 $\cost$ is not exactly the length of the path, but it can be 
 established that minimal length paths also minimize $\cost$. This latter cost is 
 better conditioned for optimization purposes.
@@ -401,7 +414,7 @@ better conditioned for optimization purposes.
 The gradient of the cost function $\nabla \cost (\xx)$ is computed as follows:
 $$
 \nabla \cost (\xx) = 
-\left( (\lambda_{i}(\conf_{i+1} - \conf_{i})^T - \lambda_{i+1}(\conf_{i+2} - \conf_{i+1})^T) \weight^2 \right)_{i=0\cdots wp-1}
+\left( (\lambda_{k}(\conf_{k+1} - \conf_{k})^T - \lambda_{k+1}(\conf_{k+2} - \conf_{k+1})^T) \weight^2 \right)_{k=0\cdots wp-1}
 $$
 
 
@@ -426,15 +439,13 @@ We assume that the direct interpolation between the initial and final configurat
 & \xx_{i+1} =  \xx_{i} + \alpha_i \p_i
 \end{split} 
 \end{equation}
-where $\alpha_i$ is a real valued parameter. Taking $\alpha_i=1$ yields the 
+where \textcolor{blue}{$\p_i$ is computed by an unconstrained version of function \texttt{computeIterate}, and} $\alpha_i$ is a real valued parameter. Taking $\alpha_i=1$ yields the 
 unconstrained minimal cost path, i.e. all waypoints aligned on the straight line 
 between $\conf_0$ and $\conf_{wp+1}$. Since this solution is in collision, we set 
 $\alpha_i = \alpha_{init}$
 where $\alpha_{init}$ is a parameter in interval $[0,1]$.
 
-We iterate step~(\ref{eq:iteration-1}) until path $\xx_{i+1}$ is in collision. This 
-corresponds to the unconstrained function \texttt{computeIterate} in 
-(Algorithm~\ref{algo:gradient}).
+We iterate step~(\ref{eq:iteration-1}) until path $\xx_{i+1}$ is in collision.
 When a collision is detected, we introduce a constraint and perform a new 
 iteration from $\xx_i$ as explained in the next section.
 
@@ -443,19 +454,20 @@ iteration from $\xx_i$ as explained in the next section.
 \begin{figure}
 	\centering
 	\includegraphics[width=9cm]{optim_grad.pdf}
-	\caption{Illustration of one iteration of our optimization. $\xx_{i+1}$ 
-	appears 
+	\caption{Illustration of one iteration of our optimization.
+	$\xx_{i+1}$ appears 
 	to be in collision with the obstacle. The first colliding configuration 
-	$\xx_{i+1}(\tcolli)$ is returned by the continuous collision checker. The 
+	$\xx_{i+1}(\tcolli)$ \textcolor{blue}{at abcissa $\tcolli$} is returned by 
+	the continuous collision checker. The 
 	corresponding constraint will be computed in the backtracked configuration 
 	$\xx_{i}(\tcolli)$.}
 	\label{optim_grad}
 \end{figure}
 
-Let us assume that at iteration $i$, $k$ constraints have been inserted before the current iteration. 
+\textcolor{blue}{The constraint function is noted $f$}. Let us assume that at iteration $i$, $j$ constraints have been inserted before the current iteration. 
 These constraints are stored as lines of a Jacobian matrix as follows:
 $$
-\Jf_{i} = \left(\begin{array}{c}L_1 \\ \vdots \\ L_k\end{array}\right)
+\Jf_{i} = \left(\begin{array}{c}L_1 \\ \vdots \\ L_j\end{array}\right)
 $$
 where the step $\p_i$ is constrained to be in the kernel of $\Jf_{i}$ as follows:
 $$
@@ -513,7 +525,7 @@ $$
 $$
 
 Notice that $\mathbf{u}$ is well defined since configuration 
-$\xx_{i}(t_{coll\ i})$ is collision-free.
+$\xx_{i}(\tcolli)$ is collision-free.
 Let $g$ be the function defined for any $\conf \in \CS$ to $\real$ by:
 $$
 g (\conf) = \left(M_{1}^{-1} (\conf) M_2 (\conf) \po_2(\conf) - \po_1(\conf) | \mathbf{u}\right)
@@ -541,15 +553,15 @@ section. Then, a line is added in the constraint Jacobian matrix (function
 \texttt{addCollisionConstraint}), and the constraint 
 Jacobian becomes:
 \begin {align*}
-\Jf_{i+1} &= \left(\begin{array}{c}L_1 \\ \vdots \\ L_{k+1}\end{array}\right)\ \mbox {with}\\
-L_{k+1} &= \frac{\partial f}{\partial \xx}(\xx_i)
+\Jf_{i+1} &= \left(\begin{array}{c}L_1 \\ \vdots \\ L_{j+1}\end{array}\right)\ \mbox {with}\\
+L_{j+1} &= \frac{\partial f}{\partial \xx}(\xx_i)
 \end{align*}
 
 \vspace{0.4cm}
 
 Finally, we refer to~\cite{nocedal2006numerical} for solving constrained quadratic 
-programs (QP) (function \texttt{computeIterate} in 
-(Algorithm~\ref{algo:gradient})).
+programs (QP). \textcolor{blue}{The QP step computation corresponds to a constrained 
+version of \texttt{computeIterate}}.
 
 %The solution step is given by:
 %$$
@@ -561,17 +573,17 @@ programs (QP) (function \texttt{computeIterate} in
 
 \subsubsection{Linearized constraint computation} \label{sec:lin_constr_compt}
 
-Let $\conf_{k\,i}$ denote the waypoint $k$ along path $\xx_i$.
+Let $\conf_{k,i}$ denote the waypoint $k$ along path $\xx_i$.
 There exist $\beta\in[0,1]$ and $k$ such that $\xx_i (\tcolli)$ can be written as a combination of two waypoints:
 $$
-\xx_i (\tcolli) = \conf_{k\,i} + \beta (\conf_{k+1\,i} - \conf_{k\,i})
+\xx_i (\tcolli) = \conf_{k,i} + \beta (\conf_{k+1,i} - \conf_{k,i})
 $$
 
 Thus the linearized constraint Jacobian $\frac{\partial f}{\partial \xx}(\xx_i)$ 
 is built by matrix 
-blocks using the Jacobian $\frac{\partial f}{\partial \conf}$ expressed in each of the two waypoints
-and $\beta$. This stage corresponds to \texttt{computeCollisionConstraint} in 
-(Algorithm~\ref{algo:gradient}).
+blocks using the Jacobian $\frac{\partial f}{\partial \conf}$ expressed in 
+each of the two waypoints and $\beta$. This stage \textcolor{blue}{is refered as 
+to \texttt{computeCollisionConstraint}}.
 
 
 \subsection{Convergence Analysis}
@@ -583,17 +595,20 @@ From the definition of $\Jf_{i}$, it is straightforward that:
 \begin{equation}\label{eq:decreasing-kernel}
 \kernel \Jf_{i+1} \subset \kernel \Jf_{i}
 \end{equation}
+\textcolor{blue}{In other words, any iteration step $\p_i$ that complies with the 
+collision constraints on path $\xx_{i+1}$, necessarily sastifies $\xx_i$ constraints.}
 Let us assume that:
 \begin{equation}\label{eq:assumption-1}
 L_{k+1}\p_i \not= 0
 \end{equation}
-We will elaborate later on this assumption. This means that $\p_{i}\notin\kernel J_{i+1}$, and as $\p_{i}\in\kernel J_{i}$, then:
+We will elaborate later on this assumption. This means that 
+$\p_{i}\notin\kernel \Jf_{i+1}$, and as $\p_{i}\in\kernel \Jf_{i}$, then:
 $$
-\kernel J_i \not= \kernel J_{i+1}
+\kernel \Jf_i \not= \kernel \Jf_{i+1}
 $$
 From~(\ref{eq:decreasing-kernel}), we deduce that:
 $$
-\dim (\kernel J_{i+1}) < \dim (\kernel J_i)
+\dim (\kernel \Jf_{i+1}) < \dim (\kernel \Jf_i)
 $$
 This result proves that under assumption~(\ref{eq:assumption-1}), each added constraint 
 is linearly independent from the 
@@ -605,19 +620,18 @@ previous ones, and thus our algorithm terminates in a finite number of iteration
 \noindent
 Let us consider the following trajectory:
 \begin{equation}\label{eq:trajectory}
-\conf (t) = (\xx_{i} + t\, \alpha_i \p_{i}) (t_{coll\ i}), \ t \in [0,1]
+\conf (t) = (\xx_{i} + t\, \alpha_i \p_{i}) (\tcolli), \ t \in [0,1]
 \end{equation}
-where the motion is defined by taking a constant abscissa $\tcolli$ and by moving from the 
-path $\xx_i$ along the step $\p_i$. Note that configuration $\xx_{i+1}(t_{coll\ i})$ is reached when $t=1$.
+\textcolor{blue}{where $\xx_i$ is still collision-free and $\xx_{i+1}$ 
+has its first collision detected at abcissa $\tcolli$.}
+The motion $\conf(t)$ is defined by taking a constant abscissa $\tcolli$ and by 
+moving from the 
+path $\xx_i$ along the step $\p_i$. Note that configuration $\xx_{i+1}(\tcolli)$ is reached when $t=1$.
 
-Thus the velocity of point $\po_2(q(t))$ in the reference frame of $\body_1$ projected onto $\mathbf{u}$ along the motion of the robot is given by:
+Thus the velocity of point $\po_2(\conf(t))$ in the reference frame of $\body_1$ projected onto $\mathbf{u}$ along the motion of the robot is given by:
 $$
  \dot{\conf}(t) = \alpha_i \frac{\partial f}{\partial \xx}(\xx_i + t\alpha_i\xx_{i+1})\p_i
 $$
-
-
-
-
 
 
 Therefore the following expressions
@@ -625,7 +639,7 @@ Therefore the following expressions
 $$
 \dot{\conf}(0) = \alpha_i \frac{\partial f}{\partial \xx}(\xx_{i})\p_i \ \ \text{and} \ \ \dot{\conf}(1) = \alpha_i \frac{\partial f}{\partial \xx}(\xx_{i+1})\p_i
 $$
-correspond to $(\dot{\po_2}|\mathbf{u})$, respectively in configurations $\xx_{i}(t_{coll\ i})$ and $\xx_{i+1}(t_{coll\ i})$. The term $\dot{\conf}(1)$ being equal to zero requires either:
+correspond to $(\dot{\po_2}|\mathbf{u})$, respectively in configurations $\xx_{i}(\tcolli)$ and $\xx_{i+1}(\tcolli)$. The term $\dot{\conf}(1)$ being equal to zero requires either:
 \begin {enumerate}
 \item that $\po_1$ and $\po_2$ come to contact at zero velocity, or
 \item the velocity of $\po_2$ in the reference frame of $\body_1$ is orthogonal to 
@@ -636,8 +650,7 @@ except if the user builds such a case on purpose.
 The second case may appear and can be noted by a rank loss of $\Jf_{i+1}$.
 Then we do not directly insert the new constraint. Instead, we process intermediate 
 iterations until the redundancy vanishes, as explained in function 
-\texttt{findNewConstraint} in (Algorithm~\ref{algo:solveRedundant}), and illustrated in Figure~\ref{fig:convergence-diagram}.
-
+\texttt{findNewConstraint} in Algorithm~\ref{algo:solveRedundant}, and illustrated in Figure~\ref{fig:convergence-diagram}.
 
 
 After producing an intermediate iteration $\xx_{i+2}$ where $\alpha_i$ has
@@ -648,13 +661,17 @@ on it, and the constraint is linearized around the latest free path.
 \begin{figure}
 	\centering
 	\includegraphics[width=15.8cm]{convergence-diagram.pdf}
-	\caption{Representation of a trajectory $\conf (t)$ from 
-	Equation~(\ref{eq:trajectory}) in the 
-	configuration space (left). For the same trajectory in the workspace, the 
-	colliding bodies are illustrated (right). Note that a case with 
+	\caption{\textcolor{blue}{Considering a trajectory 
+	$\conf (t) = (\xx_{Free} + t\, \alpha \p)(\kappa)$ 
+	with $\xx_{Coll} = \xx_{Free} + \alpha\p$ ($\xx_{Free}$, $\xx_{Coll}$, $\p$ 
+	and $\kappa$ resp. collision-free path, in-collision path, iteration step 
+	and collision-abcissa).
+	The trajectory is represented in the configuration space (left) and in the 
+	workspace with the colliding bodies (right).}
+	Note that a case with 
 	$(\dot{\po_2}(\xx_{Free})|\mathbf{u})=0$ is considered, so $\p$ already complies 
 	with the constraint that should be added if no redundancy was tracked. Therefore, 
-	(Algorithm~\ref{algo:solveRedundant}) will produce one intermediate step
+	Algorithm~\ref{algo:solveRedundant} will produce one intermediate step
 	$\xx$ (gray path and clear bodies). $\xx$ is collision-free and 
 	$(\dot{\po_2}(\xx)|\mathbf{u})\neq 0$ so the redundancy is solved, 
 	returning the new constraint.}
@@ -678,6 +695,7 @@ on it, and the constraint is linearized around the latest free path.
 	\EndIf
 	\State $\frac{\partial f}{\partial \xx} (\xx_{Free}) \gets$\texttt{computeCollisionConstraint}($\xx_{Coll}$, $\xx_{Free}$)
 	\State $solved \gets$ \texttt{isFullRank}($\Jf$ , $\frac{\partial f}{\partial \xx} (\xx_{Free})$)
+	\textcolor{blue}{\State $\alpha \gets 0.5\alpha$}
 \EndWhile
 \end{algorithmic}
 \caption{Description of \texttt{findNewConstraint}() which returns a linearly 
@@ -730,7 +748,7 @@ would not vanish at $t=1$. Therefore, assumption~(\ref{eq:assumption-1}) is veri
 \caption{Gradient-based (GB) algorithm for path-optimization.} \label{algo:gradient}
 \end{algorithm}
 
-In this section, the GB path-optimizer (Algorithm~\ref{algo:gradient}) is described
+In this section, the GB path-optimizer Algorithm~\ref{algo:gradient} is described
 according to the previous steps definitions. One difficulty here is to handle 
 the scalar parameter $\alpha$ determining how much of the computed step $\p$ will 
 be traveled along. We choose $\alpha_{init} = 0.2$ or 0.05 to process small steps.
@@ -781,30 +799,17 @@ optimize in an affordable time, because of probabilistically failing to sample
 configurations in the box. The GB method succeeds to optimize the 
 path contained in the box, with the following cost coefficients:
 $$
-\lambda_{i-1} = \frac{1}{\sqrt{(\conf_{i\,0}-\conf_{i-1\,0})^T \weight^2 
-(\conf_{i\,0}-\conf_{i-1\,0})}}, \  i \in [1\,..\, wp+1]  
+\lambda_{k-1} = \frac{1}{\sqrt{(\conf_{k,0}-\conf_{k-1,0})^T \weight^2 
+(\conf_{k,0}-\conf_{k-1,0})}}, \  k=1\cdots wp+1  
 $$
 aiming at keeping the same ratio between path segment lengths at 
 minimum as at 
-initial path, represented by the waypoints ($\conf_{i\,0})_{1\leq i\leq wp+1}$.
+initial path, represented by the waypoints ($\conf_{i,0})_{k=1\cdots wp+1}$.
 Without these coefficients, the path that minimizes the cost corresponds to a 
 straight line with the waypoints equidistantly allocated. This is not relevant for 
 Figure~\ref{local_box_optim} type of problems where a local passage is very
 constrained by obstacles. Note that this cost is also working with all other 
 examples presented in this paper, and provides better quality results than the original cost.
-
-
-\begin{figure}
-	\centering
-	\includegraphics[width=10cm]{local_box_optim.pdf}
-	\caption{Case of a long initial path (above) containing a small part 
-	that can 
-	be optimized (below). Random shortcut is unlikely to optimize the initial 
-	dashed part containing detours in the box, whereas our method 
-	succeeds (in blue). This type of issue is common in navigation problems, in 
-	environments with long corridors.}
-	\label{local_box_optim}
-\end{figure}
 
 
 
@@ -873,15 +878,15 @@ We also experiment our algorithm on more complex robots and environments.
 In the included video and Figures~\ref{pr2_final},~\ref{fiad} 
 and~\ref{fig:trajectories}, we present multiple situations where the GB algorithm 
 is tested and compared to RS~\cite{randomShortcutHPP}
-(Algorithm~\ref{algo:random-shortcut}) and PRS~\cite{partialrandomShortcutHPP} 
+Algorithm~\ref{algo:random-shortcut} and PRS~\cite{partialrandomShortcutHPP} 
 adapted from~\cite{GeraertsIJRR07}.
 The termination condition of RS allows it to try 
 shortening the path until five iterations of non-improvement are reached. 
-This corresponds to $maxNbFailures$ in (Algorithm~\ref{algo:random-shortcut}).
+This corresponds to $maxNbFailures$ in Algorithm~\ref{algo:random-shortcut}.
 For our implementation of PRS, first a shortcut is tried on each DOF between 
 $\conf_0$ and $\conf_{wp+1}$. 
 Then, for each DOF, configurations are sampled as in 
-(Algorithm~\ref{algo:random-shortcut}). The steering-method returns a path made of 
+Algorithm~\ref{algo:random-shortcut}. The steering-method returns a path made of 
 an interpolation on only 
 the current DOF and based on the previous subpath for other DOF. If this path is 
 collision-free, we replace it as in RS. This process is also stopped when five 
@@ -978,7 +983,7 @@ uses, resulting in a path length of 4.08.
 Whereas the GB optimized-path mainly 
 results in moving the arms as expected (Figure~\ref{pr2_final} right), just creating 
 two collision-constraints between the arms. In the PRS 
-result, only presented in the video, the mobile base motion is canceled. However, this is not the case for other unnecessary DOF motions. In addition, the arms motion is very wide and not as optimized as in the GB trajectory.
+result, only presented in the video, the mobile base motion is canceled. However, this is \textcolor{blue}{not} the case for other unnecessary DOF motions. In addition, the arms motion is very wide and not as optimized as in the GB trajectory.
 
 % analysis PR2 in kitchen:
 We obtain similar results on the PR2 performing manipulation tasks 
