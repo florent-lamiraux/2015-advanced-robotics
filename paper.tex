@@ -41,8 +41,6 @@
 % Math shortcuts :
 \newcommand\real{\mathbb{R}}
 \newcommand\p{\mathbf{p}}
-\newcommand\pii{\mathbf{p_{i,i+1}}}
-\newcommand\pij{\mathbf{p_{i,j}}}
 \newcommand\gT{\tilde{g}^T}
 \newcommand\g{\tilde{g}}
 \newcommand\CS{\mathcal{C}}
@@ -57,9 +55,10 @@
 \newcommand\translation{\mathbf{t}}
 %\newcommand\tcolli{t_{coll\ i}}
 \newcommand\tcolli{\kappa_i}
-\newcommand\po{\mathbf{po}}
+\newcommand\po{\mathbf{P}}
 \newcommand\Jf{{J_f}}
 \newcommand\kernel{\mbox{Ker }}
+\newcommand\U{\mathbf{u}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{document}
@@ -129,17 +128,17 @@ optimal solution, but computation time is significantly higher than classical
 approaches.
 \end{itemize}
 
+\textcolor{blue}{Optimization is always regarding to one or several criteria. The most common in motion planning are the path length, which penalize detours, the obstacle clearance for safety and the execution time, which is influenced by the number of via points, introducing velocity discontinuities. One can also mention the minimization of the acceleration or jerk peaks to implement safely the motion on a robot.}
+
 In this paper, we propose a method aimed at shortening path length after a path
 planning step. Note that we do not address path planning, but that we take the
 result of a probabilistic motion planner as the input to our path optimization 
 method.
 
-\textcolor{blue}{Definition of what could be optimized (path length, execution time, number of via points, ...}
-
 \begin{figure}
 	\centering
 	\includegraphics[width=10cm]{local_box_optim2.pdf}
-	\caption{Case of a long initial path (above) containing a small part 
+	\caption{Case of a long initial path from $\conf_{init}$ to $\conf_{final}$ (above) containing a small part 
 	that can 
 	be optimized (below). Random shortcut is unlikely to optimize the initial 
 	dashed part containing detours in the box, whereas our method 
@@ -274,6 +273,8 @@ method cannot solve Figure~\ref{decoupled_DOF_optimization} issue.
 
 
 \section{PATH OPTIMIZATION} \label{section:path_optim}
+
+\textcolor{blue}{This section describes the settling of the Gradient-based optimizer. The method works as a classical Quadratic Program (QP), reducing the path length with a cost function and avoid collisions with constraints. Details of the QP elements will be given in the following subsections, and associated to functions that will populate the global algorithm, presented in the last section.}
 
 \subsection {Kinematic chain}
 
@@ -471,7 +472,7 @@ $$
 $$
 where the step $\p_i$ is constrained to be in the kernel of $\Jf_{i}$ as follows:
 $$
-\Jf_{i} \p_i = 0
+\Jf_{i} \, \p_i = 0
 $$
 
 \subsubsection{New constraint}
@@ -512,27 +513,31 @@ orthogonal direction of the encountered collision.
 
 In the collision-configuration $\xx_{i+1}(\tcolli)$, let $\po_c\in \real^3$ be a 
 contact point expressed in the global frame 
-(Figure~\ref{contact-points} left). In any configuration $\conf$, we define $\po_1(\conf)$ and $\po_2(\conf)$ as the coordinates of $\po_c$ in the respective local frames of $\body_1$ and $\body_2$ (Figure~\ref{contact-points} right).
-
+(Figure~\ref{contact-points} left).
+\textcolor{blue}{
+In any configuration $\conf$, let 
+$\po_j^l(\conf)$ be the coordinates in the frame of $\body_l$ of $\po_c$ expressed the frame of $\body_j$.
 Let $M_1(\conf) \in SE(3)$ (resp. $M_2(\conf) \in SE(3)$) denote the homogeneous transformation 
-between frames of $\body_1$ (resp. $\body_2$) and the global frame in configuration 
-$\conf$. Let $\mathbf{u}$ be the unit vector 
-linking the contact points $\po_1(\xx_{i}(\tcolli))$ and 
-$\po_2(\xx_{i}(\tcolli))$:
+between frames of $\body_1$ (resp. $\body_2$) and the global frame.
+Thus, $\po_2^1(\conf) = M_{1}^{-1} (\conf) M_2 (\conf)$.
+}
+
+\textcolor{blue}{
+In configuration $\xx_{i}(\tcolli)$, let $\mathbf{u}$ be the unit vector 
+linking the points $\po_1$ and $\po_2$ (Figure~\ref{contact-points} right):
 $$
-\mathbf{u} = \frac{M_{1}^{-1} (\xx_{i}(\tcolli)) M_2 (\xx_{i}(\tcolli)) \po_2(\xx_{i}(\tcolli)) - \po_1(\xx_{i}(\tcolli))}{\|M_{1}^{-1} 
-(\xx_{i}(\tcolli)) M_2 (\xx_{i}(\tcolli)) \po_2(\xx_{i}(\tcolli)) - \po_1(\xx_{i}(\tcolli))\|}
+\U = \frac{\po_2^1(\xx_{i}(\tcolli)) - \po_1^1(\xx_{i}(\tcolli))}{\|\po_2^1(\xx_{i}(\tcolli)) - \po_1^1(\xx_{i}(\tcolli))\|}
 $$
+}
 
 Notice that $\mathbf{u}$ is well defined since configuration 
 $\xx_{i}(\tcolli)$ is collision-free.
-Let $g$ be the function defined for any $\conf \in \CS$ to $\real$ by:
+\textcolor{blue}{
+Let $g$ be the function representing the projection of $\overrightarrow{\po_1(\conf)\,\po_2(\conf)}$ on $\mathbf{u}$. $g$ is defined for any $\conf \in \CS$ to $\real$ by:
 $$
-g (\conf) = \left(M_{1}^{-1} (\conf) M_2 (\conf) \po_2(\conf) - \po_1(\conf) | \mathbf{u}\right)
+g (\conf) = \left(\po_2^1(\conf) - \po_1^1(\conf) | \mathbf{u}\right)
 $$
-The function $g$
-represents the projection of $\overrightarrow{\po_1(\conf)\,\po_2(\conf)}$ 
-on $\mathbf{u}$.
+}
 %which is calculated from the last collision-free path at abscissa $\tcolli$.
 
 Let $f$ be the function defined from $\CS^{wp}$ to $\real$ by:
@@ -721,8 +726,8 @@ would not vanish at $t=1$. Therefore, assumption~(\ref{eq:assumption-1}) is veri
 
 \begin{algorithm}[H]
 \begin{algorithmic}%[1] % line numerotation
-\INPUT{Path to optimize $\xx_0$}
-\OUTPUT{Optimized collision-free path $\xx_0$}
+\INPUT{path to optimize $\xx_0$}
+\OUTPUT{optimized collision-free path $\xx_0$}
 \State $\alpha \gets \alpha_{init}$
 \State $minReached \gets false$
 \While{($\textbf{not}(noCollision \textbf{ and } minReached)$)}
@@ -749,13 +754,20 @@ would not vanish at $t=1$. Therefore, assumption~(\ref{eq:assumption-1}) is veri
 \end{algorithm}
 
 In this section, the GB path-optimizer Algorithm~\ref{algo:gradient} is described
-according to the previous steps definitions. One difficulty here is to handle 
-the scalar parameter $\alpha$ determining how much of the computed step $\p$ will 
-be traveled along. We choose $\alpha_{init} = 0.2$ or 0.05 to process small steps.
+according to the previous steps definitions.
+\textcolor{blue}{PARTIR A FINIR!!}
+\textcolor{blue}{Remind that, the QP optimal step $\p$ computed by \texttt{computeIterate} is known.
+The idea of the algorithm is to process ....
+So the difficulty here is to handle 
+the scalar parameter $\alpha$ determining how much of the computed step  will be traveled along. 
+As presented in Algorithm~\ref{algo:gradient}, $\alpha$ takes two values, $\alpha_{init}<1$ to process smaller steps or $1$ to go directly to the optimum. This latter case is interesting since, if this optimal path is collision-free, the algorithm has converged and returns the path as the solution.
+Choosing to travel small steps from a valid path decrease the chances of being in collision. Besides if one occurs, the collision-constraint is computed on the last valid path.
+$\alpha_{init}$ could be computed from geometrical considerations.
+...
+smaller steps toward the minimum are iteratively applied and tested, and constraints are added each time a collision is found with a reduced step (i.e. $\alpha \neq 1$).}
 
-Each time a collision-constraint is added, 
-the solution of the current QP is tested (i.e. $\alpha = 1$). If this path is collision-free, the algorithm returns it as the solution. Otherwise, 
-smaller steps toward the minimum are iteratively applied and tested, and constraints are added each time a collision is found with a reduced step (i.e. $\alpha \neq 1$).
+The collision detection on a path is handled by \texttt{validatePath}, which returns $true$ if the given path is collision-free.
+
 Note that even if the constraints are linearized, the algorithm converges.
 
 
