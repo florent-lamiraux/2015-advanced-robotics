@@ -755,18 +755,16 @@ would not vanish at $t=1$. Therefore, assumption~(\ref{eq:assumption-1}) is veri
 
 In this section, the GB path-optimizer Algorithm~\ref{algo:gradient} is described
 according to the previous steps definitions.
-\textcolor{blue}{PARTIR A FINIR!!}
 \textcolor{blue}{Remind that, the QP optimal step $\p$ computed by \texttt{computeIterate} is known.
-The idea of the algorithm is to process ....
-So the difficulty here is to handle 
+The idea of the algorithm is to process iterations that reduce the path length according to the QP cost. If collision-constraints have been added to the QP, further iterations will comply with them. The algorithm stops whether the QP minimum is reached and collision-free. The collision detection on a path is handled by \texttt{validatePath}, which returns $true$ if the given path is collision-free.
+}
+
+\textcolor{blue}{
+The main difficulty is to handle 
 the scalar parameter $\alpha$ determining how much of the computed step  will be traveled along. 
 As presented in Algorithm~\ref{algo:gradient}, $\alpha$ takes two values, $\alpha_{init}<1$ to process smaller steps or $1$ to go directly to the optimum. This latter case is interesting since, if this optimal path is collision-free, the algorithm has converged and returns the path as the solution.
-Choosing to travel small steps from a valid path decrease the chances of being in collision. Besides if one occurs, the collision-constraint is computed on the last valid path.
-$\alpha_{init}$ could be computed from geometrical considerations.
-...
-smaller steps toward the minimum are iteratively applied and tested, and constraints are added each time a collision is found with a reduced step (i.e. $\alpha \neq 1$).}
-
-The collision detection on a path is handled by \texttt{validatePath}, which returns $true$ if the given path is collision-free.
+Choosing to travel small steps from a valid path decrease the chances of being in collision. Besides if one occurs, the collision-constraint is computed on the last valid path, which is not too much deformed compared to the path that has collisions. As a result, collision-constraints are only computed (\texttt{computeCollisionConstraint}) and added (\texttt{addCollisionConstraint}) when performing a reduced iteration (i.e. $\alpha = \alpha_{init}$).
+}
 
 Note that even if the constraints are linearized, the algorithm converges.
 
@@ -777,7 +775,7 @@ This part gathers optimization results performed on the planning software
 Humanoid Path Planner~\cite{hpp}. Initial paths are obtained with two 
 kinds of probabilistic planners: Visibility-PRM~\cite{visibility-prm} and 
 RRT-connect~\cite{rrt-connect}. Unless another value is provided, $\alpha_{init}$ 
-is set to 0.2.
+is set to 0.2. \textcolor{blue}{A further section provides a discussion on the $\alpha_{init}$ value setting.}
 
 \subsection{From 2D basic examples...}
 
@@ -827,12 +825,20 @@ examples presented in this paper, and provides better quality results than the o
 
 \subsection{To 3D complex problems}
 
+\subsubsection{Analysis of $\alpha_{init}$ influence}
+\textcolor{blue}{Results without comparison to RS and PRS here
+$\alpha_{init}$ could be computed from geometrical considerations.
+}
+TODO !!
+
+
+\subsubsection{Comparison to random shortcut algorithms}
 \begin{algorithm}
 \begin{algorithmic}%[1] % line numerotation
-\INPUT{Path to optimize $\xx$}
+\INPUT{Path to optimize $\xx$, time limit $t_{lim}$}
 \OUTPUT{Optimized collision-free path $\xx$}
-   \State $nbFailures$ $\gets 0$
-   \While {$nbFailures < maxNbFailures$}
+   \State \textcolor{blue}{$t_{start} \gets \texttt{currentTime()}; \ t \gets 0$}
+   \While {\textcolor{blue}{$t < t_{lim}$}}
         \State $failure \gets true$
         \State $t_1 < t_2 \gets \mbox{random numbers in }[0,1]$
         \State $lp0 \gets \texttt{steeringMethod} (\xx(0), \xx(t_1))$
@@ -840,33 +846,29 @@ examples presented in this paper, and provides better quality results than the o
         \State $lp2 \gets \texttt{steeringMethod} (\xx(t_2), \xx(1))$
         \State $newPath \gets \mbox{empty path defined on }[0,0]$
    	\If{\texttt{validatePath($lp0$)}}
-          \State $newPath \gets lp0$; $failure \gets false$
+          \State $newPath \gets lp0$;
         \Else
           \State $newPath \gets \xx_{|[0,t_1]}$
         \EndIf
    	\If{\texttt{validatePath($lp1$)}}
           \State $newPath \gets \texttt{concatenate} (newPath, lp1)$
-          \State $failure \gets false$
         \Else
           \State $newPath \gets \texttt{concatenate} (newPath, \xx_{|[t_1,t_2]})$
         \EndIf
    	\If{\texttt{validatePath($lp2$)}}
           \State $newPath \gets \texttt{concatenate} (newPath, lp2)$
-          \State $failure \gets false$
         \Else
           \State $newPath \gets \texttt{concatenate} (newPath, \xx_{|[t_2,1]})$
         \EndIf
         \State $\xx \gets newPath$
-        \If {$failure$} $nbFailures \gets nbFailures + 1$
-        \EndIf
+        \State \textcolor{blue}{$t \gets \texttt{currentTime()} - t_{start}$}
       \EndWhile
     \Return $\xx$
 \end{algorithmic}
 \caption{Random shortcut as adapted from~\cite{Sekhavat-Svestka1998} 
 Section~6.4.1. \texttt{steeringMethod} returns the linear interpolation between 
 two configurations. $\xx_{|I}$ denotes path $\xx$ restricted to interval $I$. 
-$maxNbFailures$ is a parameter that affects time of computation and quality of 
-the result.}\label{algo:random-shortcut}
+\textcolor{blue}{$t_{lim}$ represents the duration limitation of the algorithm.}}\label{algo:random-shortcut}
 \end{algorithm}
 
 \begin{figure}
@@ -892,17 +894,18 @@ and~\ref{fig:trajectories}, we present multiple situations where the GB algorith
 is tested and compared to RS~\cite{randomShortcutHPP}
 Algorithm~\ref{algo:random-shortcut} and PRS~\cite{partialrandomShortcutHPP} 
 adapted from~\cite{GeraertsIJRR07}.
+\textcolor{blue}{
 The termination condition of RS allows it to try 
-shortening the path until five iterations of non-improvement are reached. 
-This corresponds to $maxNbFailures$ in Algorithm~\ref{algo:random-shortcut}.
-For our implementation of PRS, first a shortcut is tried on each DOF between 
-$\conf_0$ and $\conf_{wp+1}$. 
-Then, for each DOF, configurations are sampled as in 
+shortening the path until the optimization duration overflows a time limit. 
+This corresponds to $t_{lim}$ in Algorithm~\ref{algo:random-shortcut} and is typically equal to the Gradient-Based optimization duration.
+%For our implementation of PRS, first a shortcut is tried on each DOF between $\conf_0$ and $\conf_{wp+1}$. % NOT ANYMORE
+The implementation of PRS is identical to~\cite{GeraertsIJRR07}:
+for a random DOF, configurations are sampled as in 
 Algorithm~\ref{algo:random-shortcut}. The steering-method returns a path made of 
 an interpolation on only 
 the current DOF and based on the previous subpath for other DOF. If this path is 
-collision-free, we replace it as in RS. This process is also stopped when five 
-iterations of non-improvement are reached.
+collision-free, we replace it as in RS. As RS, the process is stopped when the duration exceeds $t_{lim}$.
+}
 
 \vspace{0.4cm}
 % freeflyer puzzle
