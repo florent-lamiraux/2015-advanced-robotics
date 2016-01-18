@@ -200,7 +200,7 @@ evaluated, therefore no pre-processing of either the
 robot or environment models is necessary to increase distance computation speed. 
 Respecting the problem geometry also 
 preserves that a solution can still be found, e.g. for narrow passages as holes or 
-grippers. The method is also repeatable since no randomness is introduced. The underlying optimization algorithm is a quadratic program.
+grippers. The method is also repeatable since no randomness is introduced. The underlying optimization algorithm is a \textcolor{blue}{linearly constrained} quadratic program.
 
 Related work is presented in Section II. Section III explains how the 
 path-optimizer works, from the formulation of the problem to the implemented
@@ -274,7 +274,7 @@ method cannot solve Figure~\ref{decoupled_DOF_optimization} issue.
 
 \section{PATH OPTIMIZATION} \label{section:path_optim}
 
-\textcolor{blue}{This section describes the settling of the Gradient-based optimizer. The method works as a classical Quadratic Program (QP), reducing the path length with a cost function and avoid collisions with constraints. Details of the QP elements will be given in the following subsections, and associated to functions that will populate the global algorithm, presented in the last section.}
+\textcolor{blue}{This section describes the settling of the Gradient-based optimizer. The method works as a classical Linearly Constrained Quadratic Program (LCQP), reducing the path length with a cost function and avoid collisions with constraints. Details of the LCQP elements will be given in the following subsections, and associated to functions that will populate the global algorithm, presented in the last section.}
 
 \subsection {Kinematic chain}
 
@@ -565,7 +565,7 @@ L_{j+1} &= \frac{\partial f}{\partial \xx}(\xx_i)
 \vspace{0.4cm}
 
 Finally, we refer to~\cite{nocedal2006numerical} for solving constrained quadratic 
-programs (QP). \textcolor{blue}{The QP step computation corresponds to a constrained 
+programs (\textcolor{blue}{LC}QP). \textcolor{blue}{The step computation corresponds to a constrained 
 version of \texttt{computeIterate}}.
 
 %The solution step is given by:
@@ -755,8 +755,8 @@ would not vanish at $t=1$. Therefore, assumption~(\ref{eq:assumption-1}) is veri
 
 In this section, the GB path-optimizer Algorithm~\ref{algo:gradient} is described
 according to the previous steps definitions.
-\textcolor{blue}{Remind that, the QP optimal step $\p$ computed by \texttt{computeIterate} is known.
-The idea of the algorithm is to process iterations that reduce the path length according to the QP cost. If collision-constraints have been added to the QP, further iterations will comply with them. The algorithm stops whether the QP minimum is reached and collision-free. The collision detection on a path is handled by \texttt{validatePath}, which returns $true$ if the given path is collision-free.
+\textcolor{blue}{Remind that, the LCQP optimal step $\p$ computed by \texttt{computeIterate} is known.
+The idea of the algorithm is to process iterations that reduce the path length according to the LCQP cost. If collision-constraints have been added to the LCQP, further iterations will comply with them. The algorithm stops whether the LCQP minimum is reached and collision-free. The collision detection on a path is handled by \texttt{validatePath}, which returns $true$ if the given path is collision-free.
 }
 
 \textcolor{blue}{
@@ -1053,7 +1053,7 @@ reduced to comply with very narrow passages, or increased in the opposite case.
 On the one hand, for non-high DOF examples, it appears that computation time is higher using the GB 
 optimization. The worst case comes out for the puzzle problem where the number of 
 constraints of GB is significant and $\alpha_{init}$ reduced. 
-In addition, collision checking is rapidly processed in such basic problem geometry. This favors RS while the GB optimizer spends time on the QP resolution to avoid collisions.
+In addition, collision checking is rapidly processed in such basic problem geometry. This favors RS while the GB optimizer spends time on the \textcolor{blue}{LC}QP resolution to avoid collisions.
 On the other hand, our method almost always provides the shortest paths, whereas it 
 is not even the best criterion to quantify the parasite motions disappearance.
 Note that these results are the consequence of the termination conditions of RS and PRS, balancing length reduction or shorter computation time. 
@@ -1070,7 +1070,7 @@ solved considering this DOF.
 \section{CONCLUSIONS}
 We managed to settle a path optimization for navigation and manipulation problems, and tested it with various robots and environments. Our algorithm uses standard 
 numerical tools as collision checking, linearized one-dimensional constraint
-and QP resolution. It correlates them in a 
+and \textcolor{blue}{LC}QP resolution. It correlates them in a 
 simple but effective way, and the algorithm structure is organized so that its 
 convergence is guaranteed. Furthermore, 
 our method only requires collision checking, therefore neither 
