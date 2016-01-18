@@ -56,7 +56,7 @@
 %\newcommand\tcolli{t_{coll\ i}}
 \newcommand\tcolli{\kappa_i}
 \newcommand\po{\mathbf{P}}
-\newcommand\Jf{{J_f}}
+\newcommand\Jf{\Phi}
 \newcommand\kernel{\mbox{Ker }}
 \newcommand\U{\mathbf{u}}
 
@@ -465,8 +465,8 @@ iteration from $\xx_i$ as explained in the next section.
 	\label{optim_grad}
 \end{figure}
 
-\textcolor{blue}{The constraint function is noted $f$}. Let us assume that at iteration $i$, $j$ constraints have been inserted before the current iteration. 
-These constraints are stored as lines of a Jacobian matrix as follows:
+Let us assume that at iteration $i$, $j$ \textcolor{blue}{linear} constraints have been inserted before the current iteration. 
+These constraints are stored as lines of a matrix as follows:
 $$
 \Jf_{i} = \left(\begin{array}{c}L_1 \\ \vdots \\ L_j\end{array}\right)
 $$
@@ -474,6 +474,7 @@ where the step $\p_i$ is constrained to be in the kernel of $\Jf_{i}$ as follows
 $$
 \Jf_{i} \, \p_i = 0
 $$
+\textcolor{blue}{These linear constraints are built from the linearization of a differentiable function $f$, which will be detailed in the following section.}
 
 \subsubsection{New constraint}
 
@@ -517,8 +518,8 @@ contact point expressed in the global frame
 \textcolor{blue}{
 In any configuration $\conf$, let 
 $\po_j^l(\conf)$ be the coordinates in the frame of $\body_l$ of $\po_c$ expressed the frame of $\body_j$.
-Let $M_1(\conf) \in SE(3)$ (resp. $M_2(\conf) \in SE(3)$) denote the homogeneous transformation 
-between frames of $\body_1$ (resp. $\body_2$) and the global frame.
+Let $M_1(\conf) \in SE(3)$ (respectively $M_2(\conf) \in SE(3)$) denote the homogeneous transformation 
+between frames of $\body_1$ (respectively $\body_2$) and the global frame.
 Thus, $\po_2^1(\conf) = M_{1}^{-1} (\conf) M_2 (\conf)$.
 }
 
@@ -553,14 +554,13 @@ non-linear, we linearize it around $\xx_{i}$:
 $$
 \frac{\partial f}{\partial \xx}(\xx_i)(\xx - \xx_i) = 0
 $$
-The linearization step is described in a further 
-section. Then, a line is added in the constraint Jacobian matrix (function 
-\texttt{addCollisionConstraint}), and the constraint 
-Jacobian becomes:
+The linearization step is described in the following 
+section. Then, a line is added in the constraint Jacobian matrix $\Jf_i$:
 \begin {align*}
 \Jf_{i+1} &= \left(\begin{array}{c}L_1 \\ \vdots \\ L_{j+1}\end{array}\right)\ \mbox {with}\\
 L_{j+1} &= \frac{\partial f}{\partial \xx}(\xx_i)
 \end{align*}
+\textcolor{blue}{This step is denoted by the function \texttt{addCollisionConstraint}}.
 
 \vspace{0.4cm}
 
@@ -669,7 +669,7 @@ on it, and the constraint is linearized around the latest free path.
 	\caption{\textcolor{blue}{Considering a trajectory 
 	$\conf (t) = (\xx_{Free} + t\, \alpha \p)(\kappa)$ 
 	with $\xx_{Coll} = \xx_{Free} + \alpha\p$ ($\xx_{Free}$, $\xx_{Coll}$, $\p$ 
-	and $\kappa$ resp. collision-free path, in-collision path, iteration step 
+	and $\kappa$ respectively collision-free path, in-collision path, iteration step 
 	and collision-abcissa).
 	The trajectory is represented in the configuration space (left) and in the 
 	workspace with the colliding bodies (right).}
@@ -777,7 +777,7 @@ kinds of probabilistic planners: Visibility-PRM~\cite{visibility-prm} and
 RRT-connect~\cite{rrt-connect}. Unless another value is provided, $\alpha_{init}$ 
 is set to 0.2. \textcolor{blue}{A further section provides a discussion on the $\alpha_{init}$ value setting.}
 
-\subsection{From 2D basic examples...}
+\subsection{From 2D basic examples}
 
 \begin{figure}
 	\centering
@@ -830,6 +830,20 @@ examples presented in this paper, and provides better quality results than the o
 $\alpha_{init}$ could be computed from geometrical considerations.
 }
 TODO !!
+
+\begin{figure}[H]
+	\centering
+	\subfigure[Double-arm]{
+		\includegraphics[width=6.5cm,height=5.5cm]{2Darm_comparison_alphaInit.png}
+		\label{fig:remainingLengthAlphaInit:double_arm}
+	}
+	\subfigure[Double-arm]{
+		\includegraphics[width=6.5cm,height=5.5cm]{2Darm_comparison_alphaInit.png}
+		\label{fig:remainingLengthAlphaInit:double_arm}
+	}
+  \caption{Influence of $\alpha_{init}$.}
+  \label{fig:remainingLengthAlphaInit}
+\end{figure}
 
 
 \subsubsection{Comparison to random shortcut algorithms}
@@ -981,6 +995,7 @@ video for the full motion) and path lengths, 9.10 (initial RRT-connect), 7.52 (R
 
 \vspace{0.4cm}
 
+
 In the three following high-DOF examples involving the PR2 robot, note that 
 results are better in terms of path quality, as a result of the parasite 
 DOF motions removal.
@@ -1017,6 +1032,20 @@ door is presented Figure~\ref{fig:trajectories:kitchen2} with the mobile base
 trajectories. Here, GB and RS results are similar in terms of length and rendering.
 
 \vspace{0.4cm}
+
+\begin{figure}[H]
+	\centering
+	\subfigure[Double-arm]{
+		\includegraphics[width=6.5cm,height=5.5cm]{ur2_comparison_RS_PRS_GB_sd.png}
+		\label{fig:remainingLengthComp:double_arm}
+	}
+	\subfigure[PR2-crossing-arms]{
+		\includegraphics[width=6.5cm,height=5.5cm]{PR2alone_comparison_RS_PRS_GB_sd.png}
+		\label{fig:remainingLengthComp:pr2alone}
+	}
+  \caption{Performance comparison between the three optimizers.}
+  \label{fig:remainingLength}
+\end{figure}
 
 Optimization computation time and path length averages are presented for 30 runs of 
 each example in (Table~\ref{tab:results}). In some cases, $\alpha_{init}$ was 
@@ -1095,9 +1124,10 @@ This work has been supported by the project ERC Advanced Grant 340050 Actanthrop
   blue and the GB optimized path in green. The full robots 
   motions can also be visualized in the joined video. The trajectories comparison 
   highlights the optimization success of our method, which manages to deliver a 
-  shorter or similar path compared to RS output}
+  shorter or similar path compared to RS output.}
   \label{fig:trajectories}
 \end{figure}
+
 
 
 
