@@ -202,6 +202,8 @@ Respecting the problem geometry also
 preserves that a solution can still be found, e.g. for narrow passages as holes or 
 grippers. The method is also repeatable since no randomness is introduced. The underlying optimization algorithm is a \textcolor{blue}{linearly constrained} quadratic program.
 
+\textcolor{blue}{Another important feature of our contribution is that we optimize paths on the robot configuration space in a proper mathematical way. Most other optimization algorithms represent $SO3$ rotations by a vector directed along the rotation axis and the norm of which is the rotation angle, also known as the exponential map of $so3$, or even worse by Euler angles.}
+
 Related work is presented in Section II. Section III explains how the 
 path-optimizer works, from the formulation of the problem to the implemented
 algorithm. Finally, we conclude on experimental results in Section IV.
