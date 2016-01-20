@@ -59,6 +59,7 @@
 \newcommand\Jf{\Phi}
 \newcommand\kernel{\mbox{Ker }}
 \newcommand\U{\mathbf{u}}
+\newcommand\rotation{R}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{document}
@@ -452,7 +453,7 @@ We iterate step~(\ref{eq:iteration-1}) until path $\xx_{i+1}$ is in collision.
 When a collision is detected, we introduce a constraint and perform a new 
 iteration from $\xx_i$ as explained in the next section.
 
-\subsection{Constraints}
+\subsection{Linear Constraints}
 
 \begin{figure}
 	\centering
@@ -509,7 +510,7 @@ constraint is on the position of $\body_1$ with respect to the environment.
 	\label{contact-points}
 \end{figure}
 
-The principle of the method is to compute a constraint on the backtracked 
+The principle of the method is to compute a \textcolor{blue}{linear} constraint on the initialized on the 
 free-configuration $\xx_{i}(\tcolli)$ to avoid the encountered collision $\xx_{i+1}
 (\tcolli)$. To handle this, we introduce a one-dimensional constraint based on the 
 orthogonal direction of the encountered collision.
@@ -517,28 +518,27 @@ orthogonal direction of the encountered collision.
 In the collision-configuration $\xx_{i+1}(\tcolli)$, let $\po_c\in \real^3$ be a 
 contact point expressed in the global frame 
 (Figure~\ref{contact-points} left).
-\textcolor{blue}{
-In any configuration $\conf$, let 
-$\po_j^l(\conf)$ be the coordinates in the frame of $\body_l$ of $\po_c$ expressed the frame of $\body_j$.
-Let $M_1(\conf) \in SE(3)$ (respectively $M_2(\conf) \in SE(3)$) denote the homogeneous transformation 
-between frames of $\body_1$ (respectively $\body_2$) and the global frame.
-Thus, $\po_2^1(\conf) = M_{1}^{-1} (\conf) M_2 (\conf)$.
+\textcolor{red}{We denote by
+  \begin{itemize}
+  \item $\po_1$ (resp. $\po_2$) the point belonging to body $\body_1$ (resp. $\body_2$) that coincides with $\po_c$ in configuration $\xx_{i+1}(\tcolli)$,
+  \item $M_1(\conf) \in SE(3)$ (resp. $M_2(\conf) \in SE(3)$) the rigid-body transformation representing the position of $\body_1$ (resp. $\body_2$) in the global frame in configuration $\conf$,
+  \item $\rotation_1(\conf) \in SO(3)$ (resp. $\rotation_2(\conf) \in SO(3)$) the rotation associated with $M_1(\conf)$ (resp. $M_2(\conf)$).
+  \end{itemize}
+  The position of $\po_1$ (resp. $\po_2$) in the global reference frame depends on the configuration $\conf$ of the robot. We therefore denote $\po_1(\conf)$ (resp. $\po_2(\conf)$) this position.
+We define $\U$ as the unit vector attached to $\body_1$, linking points $\po_1$ and $\po_2$ in configuration $\xx_{i}(\tcolli)$ (Figure~\ref{contact-points} right):
+$$
+\U (\conf) = \rotation_1(\conf)\rotation_1^{T}(\xx_{i}(\tcolli))\frac{\po_2(\xx_{i}(\tcolli)) - \po_1(\xx_{i}(\tcolli))}{\|\po_2(\xx_{i}(\tcolli)) - \po_1(\xx_{i}(\tcolli))\|}
+$$
+Note that
+\begin{itemize}
+\item $\U$ depends on the configuration of the robot $\conf$, since $\U$ moves with $\body_1$,
+\item $\U$ is well defined since configuration $\xx_{i}(\tcolli)$ is collision-free.
+\end{itemize}
 }
-
 \textcolor{blue}{
-In configuration $\xx_{i}(\tcolli)$, let $\mathbf{u}$ be the unit vector 
-linking the points $\po_1$ and $\po_2$ (Figure~\ref{contact-points} right):
+Let $g$ be the function mapping the projection of vector $\overrightarrow{\po_1\,\po_2}$ on $\mathbf{u}$ to a configuration $\conf$ . For any $\conf \in \CS$:
 $$
-\U = \frac{\po_2^1(\xx_{i}(\tcolli)) - \po_1^1(\xx_{i}(\tcolli))}{\|\po_2^1(\xx_{i}(\tcolli)) - \po_1^1(\xx_{i}(\tcolli))\|}
-$$
-}
-
-Notice that $\mathbf{u}$ is well defined since configuration 
-$\xx_{i}(\tcolli)$ is collision-free.
-\textcolor{blue}{
-Let $g$ be the function representing the projection of $\overrightarrow{\po_1(\conf)\,\po_2(\conf)}$ on $\mathbf{u}$. $g$ is defined for any $\conf \in \CS$ to $\real$ by:
-$$
-g (\conf) = \left(\po_2^1(\conf) - \po_1^1(\conf) | \mathbf{u}\right)
+g (\conf) = \left(\po_2(\conf) - \po_1(\conf) | \mathbf{u}\right)
 $$
 }
 %which is calculated from the last collision-free path at abscissa $\tcolli$.
@@ -547,16 +547,16 @@ Let $f$ be the function defined from $\CS^{wp}$ to $\real$ by:
 $$
 f (\xx) = g(\xx (\tcolli))
 $$
-The constraint is defined for any path $\xx$ by:
+The constraint defined for any path $\xx$ by:
 \begin {equation}\label{eq:new-constraint}
 f(\xx) - f(\xx_{i}) = 0.
 \end {equation}
-This constraint forces the configuration $\xx (\tcolli)$ to keep the same projection on $\mathbf{u}$ as in $\xx_i (\tcolli)$. Since this constraint is 
-non-linear, we linearize it around $\xx_{i}$: 
+aims at keeping colliding points $P_1$ and $P_2$ in configuration $\xx_{i+1} (\tcolli)$ apart in direction $\U$ defined by those points in configuration $\xx_{i} (\tcolli)$.
+We linearize the constraint around $\xx_{i}$: 
 $$
 \frac{\partial f}{\partial \xx}(\xx_i)(\xx - \xx_i) = 0
 $$
-The linearization step is described in the following 
+The computation of the linearized constraint is described in the next
 section. Then, a line is added in the constraint Jacobian matrix $\Jf_i$:
 \begin {align*}
 \Jf_{i+1} &= \left(\begin{array}{c}L_1 \\ \vdots \\ L_{j+1}\end{array}\right)\ \mbox {with}\\
