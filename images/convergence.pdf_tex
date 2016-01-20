@@ -1,0 +1,69 @@
+%% Creator: Inkscape inkscape 0.48.4, www.inkscape.org
+%% PDF/EPS/PS + LaTeX output extension by Johan Engelen, 2010
+%% Accompanies image file 'convergence.pdf' (pdf, eps, ps)
+%%
+%% To include the image in your LaTeX document, write
+%%   \input{<filename>.pdf_tex}
+%%  instead of
+%%   \includegraphics{<filename>.pdf}
+%% To scale the image, write
+%%   \def\svgwidth{<desired width>}
+%%   \input{<filename>.pdf_tex}
+%%  instead of
+%%   \includegraphics[width=<desired width>]{<filename>.pdf}
+%%
+%% Images with a different path to the parent latex file can
+%% be accessed with the `import' package (which may need to be
+%% installed) using
+%%   \usepackage{import}
+%% in the preamble, and then including the image with
+%%   \import{<path to file>}{<filename>.pdf_tex}
+%% Alternatively, one can specify
+%%   \graphicspath{{<path to file>/}}
+%% 
+%% For more information, please see info/svg-inkscape on CTAN:
+%%   http://tug.ctan.org/tex-archive/info/svg-inkscape
+%%
+\begingroup%
+  \makeatletter%
+  \providecommand\color[2][]{%
+    \errmessage{(Inkscape) Color is used for the text in Inkscape, but the package 'color.sty' is not loaded}%
+    \renewcommand\color[2][]{}%
+  }%
+  \providecommand\transparent[1]{%
+    \errmessage{(Inkscape) Transparency is used (non-zero) for the text in Inkscape, but the package 'transparent.sty' is not loaded}%
+    \renewcommand\transparent[1]{}%
+  }%
+  \providecommand\rotatebox[2]{#2}%
+  \ifx\svgwidth\undefined%
+    \setlength{\unitlength}{458.05bp}%
+    \ifx\svgscale\undefined%
+      \relax%
+    \else%
+      \setlength{\unitlength}{\unitlength * \real{\svgscale}}%
+    \fi%
+  \else%
+    \setlength{\unitlength}{\svgwidth}%
+  \fi%
+  \global\let\svgwidth\undefined%
+  \global\let\svgscale\undefined%
+  \makeatother%
+  \begin{picture}(1,0.43097384)%
+    \put(0,0){\includegraphics[width=\unitlength]{convergence.pdf}}%
+    \put(0.76955108,0.36702068){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$\xx_0$}}}%
+    \put(0.70070646,0.31188852){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$\xx_1$}}}%
+    \put(0.58416677,0.2254072){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$\xx_2$}}}%
+    \put(0.63282231,0.2984695){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$\xx_4$}}}%
+    \put(0.5499018,0.29317665){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$\xx_5$}}}%
+    \put(0.46637554,0.06586707){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$\xx^*$}}}%
+    \put(0.07629953,0.34759546){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{level set of $f$}}}%
+    \put(0.0714762,0.3067707){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{level set of}}}%
+    \put(0.370967,0.41193155){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$f(\xx) < 0$}}}%
+    \put(0.45551918,0.19530211){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$f(\xx) > 0$}}}%
+    \put(0.06587074,0.27052783){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$f$ linearization}}}%
+    \put(0.87559056,0.32897119){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$L_1$}}}%
+    \put(0.60612535,0.41505036){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$L_2$}}}%
+    \put(0.4039993,0.27732246){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$\xx_3$}}}%
+    \put(0.90433493,0.12887563){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$L_1$}}}%
+  \end{picture}%
+\endgroup%

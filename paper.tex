@@ -594,10 +594,19 @@ to \texttt{computeCollisionConstraint}}.
 
 
 \subsection{Convergence Analysis}
-For iterative algorithms, the risk of falling in an infinite loop 
-that keeps adding a redundant constraint exists.
-In this section, we give some assumptions under which our 
-algorithm will converge.
+
+\begin {figure}
+  \centerline {
+    \def\svgwidth {.7\linewidth}
+    \graphicspath{{./images/}}
+    \input {images/convergence.pdf_tex}
+  }
+  \caption {Illustration of linearized constraints: we want to minimize the quadratic cost $\frac{1}{2}\|\xx-\xx^*\|^2$ under the non-linear constraint $f(\xx)\leq 0$. $\alpha_{init}=\frac{1}{4}$. The algorithm starts from $\xx_0$. The first iterate is $\xx_1$ which satisfies the constraint. The second iterate is $\xx_2$ that does not satisfy the constraint. The algorithm backtracks to $\xx_1$ and inserts linear constraint $L_1: \frac{\partial f}{\partial \xx} (\xx_1)(\xx - \xx_1) = 0$. $\xx_3$ is the global minimum under $L_1$. As $\xx_3$ does not satisfy the constraint, the algorithm moves to $\xx_4$ that satisfies the constraints, and then to $\xx_5$ that does not. The algorithms backtracks to $\xx_4$, inserts constraint $L_2: \frac{\partial f}{\partial \xx} (\xx_2)(\xx - \xx_2) = 0$, and returns $\xx_4$ as a solution since the dimension of the search space is 0. Notice that the same non-linear constraint may give rise to several linear constraints. The convergence of the algorithm relies on the fact that the kernel of constraint $L2$ is not contained in the kernel of the current constraints ($L_1$ only here). The convergence analysis can be roughly summarized as follows. $L2$ to be linearly dependent of $L_1$ requires that $f$ is stationary along $L_1$ at $\xx_4$. This is unlikely (but possible) since $\xx_4$ is not far from the boundary of the domain defined by $f(\xx) \leq 0$. If $L_2$ was not linearly independent from $L_1$, Algorithm~\ref{algo:solveRedundant} would keep searching new iterates between $\xx_5$ and $\xx_4$. If by any chance constraint $f$ linearized around each of those collision-free iterates was each time linearly dependent from $L_1$ the iterates would converge to the boundary of the domain defined by $f(\xx) \leq 0$. By continuous differentiability of $f$, this would mean that $f$ is stationary at the boundary. In other words, the straight line passing by $\xx_1$ and $\xx_3$ would cross the boundary tangently (as in bottom left picture). This is possible but unlikely, unless the problem has been defined as such on purpose.}
+  \label {fig:convergence}
+\end{figure}
+
+Although linearized constraints may differ from the initial geometrically relevant non-linear constraint when the iterate goes away from the linearization path, we will show in this section that  our algorithm converges under some reasonable assumptions. The underlying idea of the proof is sketched in Figure~\ref{fig:convergence}.
+
 From the definition of $\Jf_{i}$, it is straightforward that:
 \begin{equation}\label{eq:decreasing-kernel}
 \kernel \Jf_{i+1} \subset \kernel \Jf_{i}
