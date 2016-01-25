@@ -16,7 +16,7 @@
 \begin{document}
 
 \title{A simple path-optimization method for motion planning}
-\author{M. Campana, F. Lamiraux and J.-P. Laumond}
+\author{Myl\`{e}ne Campana, Florent Lamiraux and Jean-Paul Laumond}
 \date{Answer to reviewers}
 \maketitle
 
@@ -66,9 +66,13 @@ It would be very nice with a discussion of what optimal means. Optimal can be wi
 \rule{\linewidth}{.1pt}
 \textbf{Answer}:
 
-We have developed the meaning of optimality, and we refer to a recent paper ACM-Com by one of the author.
+It is true that other optimization criteria can be different of the path length. 
+Thus, relying on the reviewer comment, we add the mention of others. Concerning 
+the choice of the path length, it allows us to obtain a quadratic cost, better 
+conditioned for optimization techniques.
 
-Concerning the choice to optimize the path length, we... by choosing the length we get a quadratic criterion, which is easier blablabla...
+Finally, we have developed the meaning of optimality, and we refer to a 
+recent paper ACM-Com by one of the author.
 
 \subsection{Comment 3}
 \hrulefill\\
@@ -89,7 +93,7 @@ The work in [11] is also described in an IJRR paper of the same authors. This pa
 \rule{\linewidth}{.1pt}
 \textbf{Answer}:
 
-As suggested, the reference has been changed to cite the journal paper.
+We thank the reviewer for the reference, [11] has been changed to cite the journal paper instead of the conference.
 
 \subsection{Comment 5}
 \hrulefill\\
@@ -100,8 +104,13 @@ The paper starts describing the details of the algorithm and reference to algori
 \rule{\linewidth}{.1pt}
 \textbf{Answer}:
 
-We understand that starting to define the algorithm's functions and reference to it too early is confusing. To enhance it, we choose to decouple the algorithm from the problem definition, and define the functions in the algorithm section. This method may seem redundant but avoid the reader to flip back and forth to find the functions definitions.
-Furthermore, we prefer to not introduce the algorithm earlier because .... \todo
+We understand that starting to define the algorithm's functions and reference 
+to it too early is confusing.
+We prefer not to introduce the algorithm earlier because its structure ensue 
+from the problem's construction.
+Instead, we prefer to remove the reference to the algorithm. We also precise at 
+the beginning of the part 3 that some of the problem steps correspond to 
+functions that will be called in the algorithm, given at the end. Thus we do not need to redefine completely the functions in the algorithm section.
 
 \subsection{Comment 6}
 \hrulefill\\
@@ -112,7 +121,7 @@ This section does not read a nicely as the previous. Simplifying the notation by
 \rule{\linewidth}{.1pt}
 \textbf{Answer}:
 
-ANSWER
+We have rewritten the notations of this part to clarify it.
 
 \subsection{Comment 7}
 \hrulefill\\
@@ -123,8 +132,7 @@ The authors only compares their approach with random shortcut and partial random
 \rule{\linewidth}{.1pt}
 \textbf{Answer}:
 
-ANSWER
-It is true that in the case of Figure 6, Prune is complementary to random shortcut, but this method, used alone, has also it's counter-examples, as the one presented in Figure 1 (and the PR2-crossing-arms Figure \todo).
+It is true that in the case of Figure 6, Prune is complementary to random shortcut. But this method, used alone, has also its counter-examples, as the one presented in Figure 1 (and the PR2-crossing-arms Figure 9).
 
 \subsection{Comment 8}
 \hrulefill\\
@@ -134,7 +142,9 @@ In the paper the authors state that it can be hard to select the stopping criter
 \rule{\linewidth}{.1pt}
 \textbf{Answer}:
 
-ANSWER
+We admit that the termination conditions of the algorithms were not fair. Instead, as suggested reviewers 1 and 3, we choose to allow the same amount of optimization duration for the three optimizers. Since the Gradient-Based optimizer is deterministic, its duration has been chosen.
+
+To provide information about the ``path length decreases as a function of time'', we have added Figure 13 some graphs comparing the three optimizers.
 
 \subsection{Comment 9}
 \hrulefill\\
@@ -145,7 +155,9 @@ Related to my previous comment about path pruning, then I would generally recomm
 \rule{\linewidth}{.1pt}
 \textbf{Answer}:
 
-ANSWER
+We thank the reviewer for the suggestion of using Prune as a preliminary optimization step for each optimizer. Regarding to our algorithm, Prune has pros and cons: its removes waypoints i.e. optimization variables so the computation time reduces. However, less waypoints results in less possible actions to blend the path. In fact, we noted that we obtained shorter paths without the pruning stage.
+
+\todo : voir si ajout d'une partie "comparaison avec et sans prune" .... globalement, prune ne change pas grand chose a la comparaison avec les autres optim, si ce n'est qu'on a en moyenne des chemins initiaux similaires (peu de waypoints)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -157,13 +169,13 @@ ANSWER
 
 It looks that the conference version of this paper [1] is not cited in the main text though it appears in the Reference section.  Please add the citation in an appropriate place.
 
-[1] Campana M, Lamiraux F, Laumond JP. A simple path optimization method for motion planning. https:
-//hal.archives-ouvertes.fr/hal-01220048. 2015.
+[1] Campana M, Lamiraux F, Laumond JP. A simple path optimization method for 
+motion planning. https://hal.archives-ouvertes.fr/hal-01220048. 2015.
 
 \rule{\linewidth}{.1pt}
 \textbf{Answer}:
 
-We removed the reference.
+We thank the reviewer for the comment. We removed the reference from the paper.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -179,7 +191,9 @@ When introducing the Jacobian of f, at no point has f been introduced as the con
 \rule{\linewidth}{.1pt}
 \textbf{Answer}:
 
-ANSWER
+We thank the reviewer for the remark. We have improved the notations of the problem, avoiding to introduce unreferenced objects at the beginning.
+
+\todo : adapter / etoffer en fonction de ce que Florent a re-modifie
 
 \subsection{Comment 2}
 \hrulefill\\
@@ -189,7 +203,11 @@ In that regard it would be nice to comment the Newton method, for example there 
 \rule{\linewidth}{.1pt}
 \textbf{Answer}:
 
-ANSWER
+We think that the reviewer is referring to line-search algorithms to 
+evaluate alpha. However these algorithms are not relevant for a QP problem since 
+the cost minimum is known. We just intend to process \textit{small} steps toward it, and to note collision-constraints. We admit that the alpha value could be chosen in a smarter way, e.g. due to geometrical considerations, but we mentioned it in the conclusion as a future work.
+
+\todo : verifier pertinence
 
 \subsection{Comment 3}
 \hrulefill\\
@@ -199,7 +217,8 @@ I wonder if the discussion concerning the configuration space, which is well don
 \rule{\linewidth}{.1pt}
 \textbf{Answer}:
 
-ANSWER
+We want to highlight the fact that we optimize paths on the robot 
+configuration space in a proper mathematical way, specially regarding to the $SO3$ rotations. Thus we prefer to briefly define notations and operators.
 
 \subsection{Comment 4}
 \hrulefill\\
@@ -209,7 +228,7 @@ The iteration index notation and the time index use the same letter (i), making 
 \rule{\linewidth}{.1pt}
 \textbf{Answer}:
 
-ANSWER
+We apologize for the unclear/unreferenced notations and have improved it.
 
 \subsection{Comment 5}
 \hrulefill\\
@@ -219,8 +238,9 @@ The kernel discussion, and velocity discussion are a bit breve and unclear for t
 \rule{\linewidth}{.1pt}
 \textbf{Answer}:
 
-ANSWER
-%The authors agree with the reviewers that this part should be modified as it is unclear.
+The authors agree with the reviewer that this part should be modified as it is unclear. We add the Figure 5 to help understanding the interest of the 3.6 part.
+
+\todo : adapter en fonction de ce que Florent a re-modifie
 
 \subsection{Comment 6}
 \hrulefill\\
@@ -234,7 +254,9 @@ Tuning the shortcut method by changing the distribution of samples along the pat
 \rule{\linewidth}{.1pt}
 \textbf{Answer}:
 
-ANSWER
+The unfair comparison, also raised by the reviewer 1, has been improved: we allocate the Gradient-Based duration as the computation times for the random optimizers. Thus we avoid arbitrary termination condition.
+
+The drawback of this method is that we ignore if the computation time of our method is too important. Thus, as suggested, we have represented the convergence curves for some benchmarks, to see if RS and PRS are not converging far rapidly than GB.
 
 \subsection{Comment 7}
 \hrulefill\\
@@ -244,7 +266,7 @@ Otherwise it would be interesting to see the alpha parameter being discussed at 
 \rule{\linewidth}{.1pt}
 \textbf{Answer}:
 
-ANSWER
+As suggested, we have added at the end of the results some graphs for different values of $\alpha_{init}$.
 
 \end{document}
 
