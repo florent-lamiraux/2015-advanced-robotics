@@ -36,7 +36,11 @@
     citecolor={blue!80!black},
     urlcolor={blue!80!black}
 }
-
+\usepackage{minibox}
+\usepackage{array}
+\newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}p{#1}}
+\newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}p{#1}}
+\newcolumntype{R}[1]{>{\raggedleft\let\newline\\\arraybackslash\hspace{0pt}}p{#1}}
 
 % Math shortcuts :
 \newcommand\real{\mathbb{R}}
@@ -771,7 +775,7 @@ The idea of the algorithm is to process iterations that reduce the path length a
 }
 
 \textcolor{blue}{
-The main difficulty is to handle 
+One main difficulty is to handle 
 the scalar parameter $\alpha$ determining how much of the computed step  will be traveled along. 
 As presented in Algorithm~\ref{algo:gradient}, $\alpha$ takes two values, $\alpha_{init}<1$ to process smaller steps or $1$ to go directly to the optimum. This latter case is interesting since, if this optimal path is collision-free, the algorithm has converged and returns the path as the solution.
 Choosing to travel small steps from a valid path decrease the chances of being in collision. Besides if one occurs, the collision-constraint is computed on the last valid path, which is not too much deformed compared to the path that has collisions. As a result, collision-constraints are only computed (\texttt{computeCollisionConstraint}) and added (\texttt{addCollisionConstraint}) when performing a reduced iteration (i.e. $\alpha = \alpha_{init}$).
@@ -833,29 +837,7 @@ constrained by obstacles. Note that this cost is also working with all other
 examples presented in this paper, and provides better quality results than the original cost.
 
 
-
 \subsection{To 3D complex problems}
-
-\subsubsection{Analysis of $\alpha_{init}$ influence}
-\textcolor{blue}{Results without comparison to RS and PRS here
-$\alpha_{init}$ could be computed from geometrical considerations.
-}
-TODO !!
-
-\begin{figure}[H]
-	\centering
-	\subfigure[Double-arm]{
-		\includegraphics[width=6.5cm,height=5.5cm]{2Darm_comparison_alphaInit.png}
-		\label{fig:remainingLengthAlphaInit:double_arm}
-	}
-	\subfigure[Double-arm]{
-		\includegraphics[width=6.5cm,height=5.5cm]{2Darm_comparison_alphaInit.png}
-		\label{fig:remainingLengthAlphaInit:double_arm}
-	}
-  \caption{Influence of $\alpha_{init}$.}
-  \label{fig:remainingLengthAlphaInit}
-\end{figure}
-
 
 \subsubsection{Comparison to random shortcut algorithms}
 \begin{algorithm}
@@ -896,40 +878,25 @@ two configurations. $\xx_{|I}$ denotes path $\xx$ restricted to interval $I$.
 \textcolor{blue}{$t_{lim}$ represents the duration limitation of the algorithm.}}\label{algo:random-shortcut}
 \end{algorithm}
 
-\begin{figure}
-	\centering
-	\includegraphics[height=4.9cm,width=1.8cm]{pr2_initial_final_vertical.png}
-	\includegraphics[width=5.7cm]{p0_pr2_alone_merged3.png}
-	\includegraphics[height=4.9cm]{p1RS_pr2_alone_merged3.png}
-	\includegraphics[height=4.9cm]{p1GB_pr2_alone_merged3.png}\\
-	\caption{PR2-crossing-arms example. In this motion planning problem, PR2 robot 
-	has just to 
-exchange the positions of its arms. The task is simple, however, in absence of 
-explicit indication, any probabilistic motion planner will compute a path that 
-makes the PR2 mobile base purposelessly moving. This is the result of RRT-connect 
-algorithm (left). Path optimization is expected to remove unnecessary motions. 
-The popular RS algorithm fails in this case (middle). Our GB algorithm 
-succeeds (right).}
-	\label{pr2_final}
-\end{figure}
 
-We also experiment our algorithm on more complex robots and environments.
+Our algorithm is also experimented on more complex robots and environments.
 In the included video and Figures~\ref{pr2_final},~\ref{fiad} 
 and~\ref{fig:trajectories}, we present multiple situations where the GB algorithm 
-is tested and compared to RS~\cite{randomShortcutHPP}
-Algorithm~\ref{algo:random-shortcut} and PRS~\cite{partialrandomShortcutHPP} 
-adapted from~\cite{GeraertsIJRR07}.
+is tested and compared to RS  and PRS.
 \textcolor{blue}{
-The termination condition of RS allows it to try 
-shortening the path until the optimization duration overflows a time limit. 
-This corresponds to $t_{lim}$ in Algorithm~\ref{algo:random-shortcut} and is typically equal to the Gradient-Based optimization duration.
+After describing the random optimizers, we will present each benchmark and its qualitative path results. Then quantitative averages and graphs will be given and discussed.
+}
+
+\textcolor{blue}{
+The RS (see Algorithm~\ref{algo:random-shortcut}) shortens the path by randomly sampling configurations along it and trying to link them with collision-free interpolations.
+The termination condition of RS is a duration time limit $t_{lim}$, and is typically set as the GB optimization duration.
 %For our implementation of PRS, first a shortcut is tried on each DOF between $\conf_0$ and $\conf_{wp+1}$. % NOT ANYMORE
 The implementation of PRS is identical to~\cite{GeraertsIJRR07}:
-for a random DOF, configurations are sampled as in 
-Algorithm~\ref{algo:random-shortcut}. The steering-method returns a path made of 
-an interpolation on only 
+for a random DOF, configurations are sampled along the initial path as in 
+Algorithm~\ref{algo:random-shortcut}. The steering-method returns a path 
+made of an interpolation on only 
 the current DOF and based on the previous subpath for other DOF. If this path is 
-collision-free, we replace it as in RS. As RS, the process is stopped when the duration exceeds $t_{lim}$.
+collision-free, it is added to the final path as in RS. The process is stopped when the duration exceeds $t_{lim}$.
 }
 
 \vspace{0.4cm}
@@ -941,25 +908,19 @@ puzzle has to cross down the
 obstacle using the hole in the middle. The initial path planned with Visibility-PRM 
 contains detours above and below the obstacle, as well as small superfluous
 motions in the hole. 
-Lengths of initial, GB optimized, and RS optimized paths are 
-respectively 23.4, 8.53 and 10.2. PRS fails to decrease the path length because in 
-this problem, all DOF are closely related to cross the hole. This behavior was also 
-noticed and improved in the PRS implementation of~\cite{GeraertsIJRR07}, 
-acting on a group of DOF. The GB optimizer manages to modify the puzzle trajectory 
-even in the hole, contrary to RS which simply copies the initial path when the 
-trajectory gets near of the obstacle. $\alpha_{init}$ is reduced to 0.05 to slightly modify the very constrained trajectory at each iteration.
+The GB optimizer manages to modify the puzzle trajectory even in the hole, but remains less efficient than RS and PRS. We explain this behavior by the fact that, ........
+%PRS fails to decrease the path length because in this problem, all DOF are closely related to cross the hole. This behavior was also noticed and improved in the PRS implementation of~\cite{GeraertsIJRR07}, acting on a group of DOF. The GB optimizer manages to modify the puzzle trajectory even in the hole, contrary to RS which simply copies the initial path when the trajectory gets near of the obstacle. 
 
 \vspace{0.4cm}
 
 % double-arm:
-In the double-arm situation, Figure~\ref{fig:trajectories:double_arm}, one arm has 
+In the double-arm benchmark (4-DOF), 
+Figure~\ref{fig:trajectories:double_arm}, one arm has 
 to get around a cylinder obstacle while the 
-other arm is relatively far from obstacles. As expected, the initial path given by 
+other arm stay in the same configuration. As expected, the initial path given by 
 RRT-connect activates both arms to solve the problem. Unlike RS, 
-the GB optimizer manages to cancel the rotation of the free-arm while optimizing the 
-first arm motion, even if the second arm is still moving because of the translation 
-motion. The initial path length 5.17 is decreased to 4.55 by RS, to 4.06 by PRS and 
-to 2.77 by the GB method using three collision-constraints with the cylinder obstacle.
+the GB optimizer manages to cancel the rotation of the free-arm while optimizing 
+the first arm motion, creating collision-constraints with the cylinder obstacle.
 
 
 \begin{figure}
@@ -978,38 +939,52 @@ to 2.77 by the GB method using three collision-constraints with the cylinder obs
 	\label{fiad}
 \end{figure}
 
-% UR5-spheres:
+% UR5-spheres and fiad:
 Some problems are 
 involving a 6-axis manipulator arm, also called UR5, equipped with a bar or a 
 gripper.
 In a relatively free environment represented in Figure~\ref{fig:trajectories:ur5}, 
-results from our method and RS are similar (path length are respectively 2.03 and 1.60). 
+results from our method and RS are similar. 
 Note also that the end-effector trajectory is completely different from the initial 
 one: the robot is easily passing between the spheres, keeping its end-effector 
 above.
-
-% UR5-fiad
 For an UR5 working in a cluttered environment inspired by an industrial issue 
 Figure~\ref{fiad}, path optimization efficiently returns a shorter solution, close 
-to the result of RS and to what can be observed in reality~\cite{factory-day-video}. 
-The initial path length 6.65 is decreased to 2.08 by RS, to 
-1.98 by the GB optimizer and unchanged by PRS.
+to the result of RS and to what can be observed in 
+reality~\cite{factory-day-video}.
 
 % baxter:
-A problem involving a Baxter-like\footnote{A torso rotation was added.} robot 
+A problem involving a Baxter-like\footnote{A torso rotation was added and 
+the grippers were removed.} robot 
 manipulating in an office environment is presented in
-Figure~\ref{fig:trajectories:baxter}. The robot starts with its end-effectors 
+Figure~\ref{fig:trajectoriesbis:baxter}. The robot starts with its end-effectors 
 above the computer and has to 
 turn and reach the shelf. According to the left-hand trajectories quality (see the 
-video for the full motion) and path lengths, 9.10 (initial RRT-connect), 7.52 (RS), 
-8.41 (PRS) and 2.70 (GB), the GB optimizer is the most successful in this case.
+video for the full motion) and path lengths, the GB optimizer provides 
+the smoothest motion.
 
 \vspace{0.4cm}
-
 
 In the three following high-DOF examples involving the PR2 robot, note that 
 results are better in terms of path quality, as a result of the parasite 
 DOF motions removal.
+
+\begin{figure}
+	\centering
+	\includegraphics[height=4.9cm,width=1.8cm]{pr2_initial_final_vertical.png}
+	\includegraphics[width=5.7cm]{p0_pr2_alone_merged3.png}
+	\includegraphics[height=4.9cm]{p1RS_pr2_alone_merged3.png}
+	\includegraphics[height=4.9cm]{p1GB_pr2_alone_merged3.png}\\
+	\caption{PR2-crossing-arms example. In this motion planning problem, PR2 robot 
+	has just to 
+exchange the positions of its arms. The task is simple, however, in absence of 
+explicit indication, any probabilistic motion planner will compute a path that 
+makes the PR2 mobile base purposelessly moving. This is the result of RRT-connect 
+algorithm (left). Path optimization is expected to remove unnecessary motions. 
+The popular RS algorithm fails in this case (middle). Our GB algorithm 
+succeeds (right).}
+	\label{pr2_final}
+\end{figure}
 
 % analysis PR2 alone:
 In the example shown Figure~\ref{pr2_final} and in the video, the mobile 
@@ -1017,65 +992,119 @@ In the example shown Figure~\ref{pr2_final} and in the video, the mobile
 the left arm up position to the right arm up one, without any assumption about the group of DOF to activate (i.e. no DOF is locked). 
 The RRT-connect planner 
 returns detours and activates non-useful DOF such as the head, the torso lift 
-and the translation on the ground. Such behavior induces a high initial path length 
-30.6. RS hardly optimizes the mobile base 
+and the translation on the ground. Such behavior induces a high initial path length. RS hardly optimizes the mobile base 
 translation (Figure~\ref{pr2_final} middle) of the robot and other unnecessary DOF 
-uses, resulting in a path length of 4.08.
-Whereas the GB optimized-path mainly 
-results in moving the arms as expected (Figure~\ref{pr2_final} right), just creating 
-two collision-constraints between the arms. In the PRS 
-result, only presented in the video, the mobile base motion is canceled. However, this is \textcolor{blue}{not} the case for other unnecessary DOF motions. In addition, the arms motion is very wide and not as optimized as in the GB trajectory.
+uses. Whereas the GB optimized-path mainly 
+results in moving the arms as expected (Figure~\ref{pr2_final} right), just creating two collision-constraints between the arms. 
+\textcolor{blue}{
+In the PRS result, only presented in the video, the motion is less optimized than with RS: the arms are moving widely and the mobile base remains activated. One solution to remove such unnecessary DOF activation can be to try applying a partial shortcut on each DOF between the initial and final configuration. It appears that this step is more costly in terms of computation time than the GB duration, therefore it cannot be afforded by our PRS implementation. However, it could be applied as a preliminary optimization for each optimizer.
+}
 
 % analysis PR2 in kitchen:
-We obtain similar results on the PR2 performing manipulation tasks 
+Similar results are obtained on the PR2 performing manipulation tasks 
 in a kitchen environment.
 Firstly, the robot moves its hands from the top to the bottom of a table.
-The different trajectories of the right gripper are indicated in Figure~\ref{fig:trajectories:kitchen1}.
-Our optimizer manages to reduce the initial path length 12.7 from visibility-PRM 
+The different trajectories of the right gripper are indicated in Figure~\ref{fig:trajectoriesbis:kitchen1}.
+Our optimizer manages to reduce the initial path length from visibility-PRM 
 and improves the path quality 
 just adding constraints between the table and the 
 robot's arms. Thus, the robot just slightly moves 
 backward and uses its arms DOF to avoid the table, instead of 
-processing a large motion to get away from the table. With the GB algorithm, the path length is 
-reduced to 3.15, against 5.47 for RS.
+processing a large motion to get away from the table.
 Secondly, another example of PR2 going from the set to the fridge 
-door is presented Figure~\ref{fig:trajectories:kitchen2} with the mobile base
+door is presented Figure~\ref{fig:trajectoriesbis:kitchen2} with the mobile base
 trajectories. Here, GB and RS results are similar in terms of length and rendering.
 
 \vspace{0.4cm}
 
+
+\textcolor{blue}{
+For some of the presented benchmarks, convergence graphs of the path 
+length reduction are 
+given Figure~\ref{fig:remainingLength}. The chosen initial paths are unchanged, 
+e.g. correspond to Figures~\ref{fig:trajectories} and~\ref{fig:trajectoriesbis} . 
+Each graph illustrates the percent ratio of the optimized path length over the initial path length, during the optimization time.
+For the random optimizers curves, averages and standard deviations on 50 
+launches are given. It is not a surprise that GB is globally slower than RS which converges faster. 
+}
+
+\begin{table}
+\renewcommand{\arraystretch}{1.3}
+\centering
+\scalebox{0.9}{
+  \begin{tabular}{cccC{1.3cm}C{1.3cm}C{1.3cm}}
+  \toprule
+  \multirow{2}{*}{\textbf{Problem}} &  & \multirow{2}{*}{Computation time} & \multicolumn{3}{c}{\minibox{Relative remaining length (\%)}} \\
+   & & &  GB  &  RS  &  PRS  \\
+  \midrule
+  \midrule
+  %\textbf{2D slidding-robot (Fig.~\ref{2D_long} right)} & & 11.9 ms & 78.3 & 68.0 & 81.8 \\
+  \textbf{Freeflyer-puzzle} & ($\alpha_{init}=0.1$) & 0 ms & 0 & 0 & 0 \\
+  \textbf{Double-arm 4-DOF} & & 39.6 ms & 46.8 & 55.5 & 63.5 \\
+  \textbf{UR5-with-spheres} & (RRT, $\alpha_{init}=0.3$) & 3.18 s & 53.8 & 47.5 & 67.8 \\
+  \textbf{UR5-industrial-example} & (RRT) & 0 ms & 0 & 0 & 0 \\
+  \textbf{Baxter-in-office} & & 0 ms & 0 & 0 & 0 \\
+  \textbf{PR2-crossing-arms} & & 882 ms & 19.9 & 43.2 & 95.2 \\
+  \textbf{PR2-in-kitchen-1} & & 0 ms & 0 & 0 & 0 \\
+  \bottomrule
+  \end{tabular}  }%scalebox
+\caption{Average results for 50 runs of several examples presented in the 
+paper. For each run, a solution path is planned by Visibility-PRM 
+(unless `RRT' for RRT-connect is mentioned) as initial guess for the 
+three optimizers. The RS and PRS results correspond to averages of 50 
+launches of the random optimizers on each initial guess. The GB 
+computation time is the work duration allowed for the random optimizers. 
+$\alpha_{init}=0.2$ unless another value is specified.
+%For the PR2-crossing-arms example only, the right column represents the distance that is traveled by the robot mobile base during the different paths.
+}
+\label{tab:results}
+\end{table}
+
+\textcolor{blue}{
+Since the GB optimizer results depend on the shape of the initial guess, e.g. the number of waypoints and the proximity to obstacles, results averages for 50 initial paths of each benchmark are presented in Table~\ref{tab:results}. As mentioned, the paths are obtained from Visibility-PRM or RRT-connect. Due to their nature, these motion planners provide different types of path: the output of Visibility-PRM contains less waypoints and does not tend to be close to the contact, behavior induced by the extension process of RRT.
+}
+
+In some cases, $\alpha_{init}$ was 
+reduced to comply with very narrow passages, or increased in the opposite case.
+\textcolor{blue}{
+The following section deals with the $\alpha_{init}$ influence in depth.
+}
+Except the low-DOF problem of the puzzle, our method almost always provides the 
+shortest paths, whereas it is not even the best criterion to quantify the parasite 
+motions disappearance.
+TO COMPLETE!
+%Finally, the complete vanishing of the mobile base motion in the GB optimized path is noted. 
+%Thus the issue addressed in Figure~\ref{decoupled_DOF_optimization} is solved considering this DOF.
+
+
+\subsubsection{Analysis of $\alpha_{init}$ influence}
+\textcolor{blue}{Results without comparison to RS and PRS here
+$\alpha_{init}$ could be computed from geometrical considerations.
+}
+TODO !!
+Contrary to a first idea that $\alpha_{init}$ is reduced to 0.05 to slightly modify the very constrained trajectory at each iteration.
+
 \begin{figure}[H]
 	\centering
+	\subfigure[2D slidding-robot (Fig.~\ref{2D_long} right)]{
+		\includegraphics[width=6.8cm,height=5.5cm]{potential2D_alphaInit.png}
+		\label{fig:remainingLengthAlphaInit:2Drobot}
+	}
 	\subfigure[Double-arm]{
-		\includegraphics[width=6.5cm,height=5.5cm]{ur2_comparison_RS_PRS_GB_sd.png}
-		\label{fig:remainingLengthComp:double_arm}
+		\includegraphics[width=6.8cm,height=5.5cm]{ur2_alphaInit.png}
+		\label{fig:remainingLengthAlphaInit:double_arm}
 	}
-	\subfigure[PR2-crossing-arms]{
-		\includegraphics[width=6.5cm,height=5.5cm]{PR2alone_comparison_RS_PRS_GB_sd.png}
-		\label{fig:remainingLengthComp:pr2alone}
+  	\subfigure[Freeflyer-puzzle]{
+		\includegraphics[width=6.8cm,height=5.5cm]{puzzle_alphaInit.png}
+		\label{fig:remainingLengthAlphaInit:puzzle}
 	}
-  \caption{Performance comparison between the three optimizers.}
-  \label{fig:remainingLength}
+	\subfigure[Baxter-in-office]{
+		\includegraphics[width=6.8cm,height=5.5cm]{baxter_alphaInit.png}
+		\label{fig:remainingLengthAlphaInit:baxter}
+	}
+  \caption{Influence of $\alpha_{init}$ on the convergence graphs of the GB optimizer.}
+  \label{fig:remainingLengthAlphaInit}
 \end{figure}
-
-Optimization computation time and path length averages are presented for 30 runs of 
-each example in (Table~\ref{tab:results}). In some cases, $\alpha_{init}$ was 
-reduced to comply with very narrow passages, or increased in the opposite case. 
-On the one hand, for non-high DOF examples, it appears that computation time is higher using the GB 
-optimization. The worst case comes out for the puzzle problem where the number of 
-constraints of GB is significant and $\alpha_{init}$ reduced. 
-In addition, collision checking is rapidly processed in such basic problem geometry. This favors RS while the GB optimizer spends time on the \textcolor{blue}{LC}QP resolution to avoid collisions.
-On the other hand, our method almost always provides the shortest paths, whereas it 
-is not even the best criterion to quantify the parasite motions disappearance.
-Note that these results are the consequence of the termination conditions of RS and PRS, balancing length reduction or shorter computation time. 
-This is particularly visible for PRS which 
-easily gives up in some problems, such as the 2D sliding-robot, the 
-UR5-with-spheres or the puzzle.
-Finally, the complete vanishing of the mobile base motion in the PRS and GB 
-optimized paths is highlighted in the right column of (Table~\ref{tab:results}). 
-Thus the issue addressed in Figure~\ref{decoupled_DOF_optimization} is 
-solved considering this DOF.
-
 
 
 \section{CONCLUSIONS}
@@ -1107,101 +1136,83 @@ This work has been supported by the project ERC Advanced Grant 340050 Actanthrop
 \begin{figure}
 	\centering
 	\subfigure[Double-arm]{
-		\includegraphics[width=6.5cm,height=5.5cm]{ur2_orth_constr_results.png}
+		\includegraphics[width=2.9cm,height=5.5cm]{ur2_initfinal.png}
+		\includegraphics[width=6.5cm,height=5.5cm]{ur2_traj.png}
 		\label{fig:trajectories:double_arm}
 	}
 	\subfigure[Freeflyer-puzzle]{
-		\includegraphics[width=6.5cm,height=5.5cm]{puzzle_orth_constr_results.png}
+		\includegraphics[width=2.9cm,height=5.5cm]{puzzle_initfinal.png}
+		\includegraphics[width=6.5cm,height=5.5cm]{puzzle_traj.png}
 		\label{fig:trajectories:puzzle}
 	}
-	\subfigure[PR2-in-kitchen-1]{
-		\includegraphics[width=6.5cm,height=5.5cm]{pr2-kitchen1_orth_constr_results.png}
-		\label{fig:trajectories:kitchen1}
-	}
 	\subfigure[UR5-with-spheres]{
-		\includegraphics[width=6.5cm,height=5.5cm]{ur5-spheres_orth_constr_results.png}
+		\includegraphics[width=2.9cm,height=5.5cm]{ur5spheres_initfinal.png}
+		\includegraphics[width=6.5cm,height=5.5cm]{ur5spheres_traj.png}
 		\label{fig:trajectories:ur5}
 	}
-	\subfigure[PR2-in-kitchen-2]{
-		\includegraphics[width=6.5cm,height=5.5cm]{pr2_kitchen2_orth_constr_results.png}
-		\label{fig:trajectories:kitchen2}
-	}
-	\subfigure[Baxter-in-office]{
-		\includegraphics[width=6.5cm,height=5.5cm]{baxter_orth_constr_results.png}
-		\label{fig:trajectories:baxter}
-	}
-  \caption{Trajectories of end-effectors, mobile bases or centers along the 
-  different paths: the initial path is represented in red, the RS optimized path in 
-  blue and the GB optimized path in green. The full robots 
-  motions can also be visualized in the joined video. The trajectories comparison 
-  highlights the optimization success of our method, which manages to deliver a 
-  shorter or similar path compared to RS output.}
+  \caption{(Left) Initial and final configurations.
+  (Right) Trajectories of end-effectors or centers along the 
+  different paths: the initial path is represented in red, the RS 
+  output in blue, the PRS output in cyan (top only) and the GB optimized path 
+  in green. The full robots 
+  motions can also be visualized in the joined video. The 
+  trajectories comparison highlights the optimization success of our method, 
+  which manages to deliver a shorter or similar path compared to the RS output. 
+  GB also cancels unecessary DOF activation contrary to RS and PRS (see the 
+  lower arm in top-right Figure).}
   \label{fig:trajectories}
 \end{figure}
 
+\begin{figure}
+	\centering
+	\subfigure[PR2-in-kitchen-1]{
+		\includegraphics[width=2.9cm,height=5.5cm]{pr2kitchen1_initfinal.png}
+		\includegraphics[width=6.5cm,height=5.5cm]{pr2kitchen1_traj.png}
+		\label{fig:trajectoriesbis:kitchen1}
+	}
+	\subfigure[PR2-in-kitchen-2]{
+		\includegraphics[width=2.9cm,height=5.5cm]{pr2kitchen2_initfinal.png}
+		\includegraphics[width=6.5cm,height=5.5cm]{pr2kitchen2_traj.png}
+		\label{fig:trajectoriesbis:kitchen2}
+	}
+	\subfigure[Baxter-in-office]{
+		\includegraphics[width=2.9cm,height=5.5cm]{baxter_initfinal.png}
+		\includegraphics[width=6.5cm,height=5.5cm]{baxter_traj.png}
+		\label{fig:trajectoriesbis:baxter}
+	}
+  \caption{Other trajectories comparisons of end-effectors or mobile bases (initial path in red, RS output in blue and GB output in green).}
+  \label{fig:trajectoriesbis}
+\end{figure}
 
-
-
-\begin{table}
-\centering
-\scalebox{0.9}{
-  \begin{tabular}{ccccc}
-  \toprule
-    \textbf{Problem} & Path obtained from & Computation time  & Path length & Base traveled distance\\
-    \midrule
-    \midrule
-    & Initial &  & $21.9$  &\\
-    \textbf{2D slidding-robot} & GB & $9.29\,\text{ms}$ & $17.0$  &\\
-    \textbf{(Fig.~\ref{2D_long} right)} & PRS & $0.336\,\text{ms}$ & $21.7$  &\\
-    & RS & $1.89\,\text{ms}$ & $17.7$  &\\
-    \midrule
-    & Initial &  & $18.8$  &\\
-    \textbf{Freeflyer-} & GB ($\alpha_{init}=0.05$) & $1020\,\text{ms}$ & $9.65$  &\\
-    \textbf{puzzle} & PRS & $1.13\,\text{ms}$ & $18.8$  &\\
-    & RS & $4.72\,\text{ms}$ & $10.3$  &\\
-    \midrule
-    & Initial &  & $10.8$  &\\
-    \textbf{Double-arm} & GB & $10.3\,\text{ms}$ & $4.79$  &\\
-    \textbf{5-DOF} & PRS & $2.17\,\text{ms}$ & $8.08$  &\\
-    & RS & $5.33\,\text{ms}$ & $6.24$  &\\
-    \midrule
-    & Initial (RRT) &  & $4.97$ &\\
-    \textbf{UR5-} & GB ($\alpha_{init}=0.4$) & $2.12\,\text{s}$ & $2.97$ &\\
-    \textbf{with-spheres} & PRS & $0.884\,\text{s}$ & $4.56$ &\\
-    & RS & $2.89\,\text{s}$ & $2.99$ &\\
-    \midrule
-    & Initial &  & $4.83$ &\\
-    \textbf{UR5-} & GB ($\alpha_{init}=0.4$) & $314\,\text{ms}$ & $2.25$ &\\
-    \textbf{industrial-example} & PRS & $30.2\,\text{ms}$ & $4.53$ &\\
-    & RS &  $95.6\,\text{ms}$ & $2.16$ &\\
-    \midrule
-    & Initial &  & $20.2$ &\\
-    \textbf{Baxter-in-} & GB & $22.7\,\text{s}$ & $6.65$ &\\
-    \textbf{office} & PRS & $9.49\,\text{s}$ & $18.9$ &\\
-    & RS & $3.13\,\text{s}$ & $11.9$ &\\
-    \midrule
-    & Initial &  & $12.6$  & $9.57$\,\text{m}\\
-    \textbf{PR2-crossing-} & GB & $1.28\,\text{s}$ & $2.57$  & $0\,\text{m}$\\
-    \textbf{arms} & PRS & $2.63\,\text{s}$ & $ 5.31$ & $0\,\text{m}$\\
-    & RS & $1.92\,\text{s}$ & $3.59$ & $2.63\,\text{m}$\\
-    \midrule
-    & Initial &  & $15.3$ &\\
-    \textbf{PR2-in-} & GB & $19.2\,\text{s}$ & $4.53$ &\\
-    \textbf{kitchen-1} & PRS & $23.5\,\text{s}$ & $12.2$ &\\
-    & RS & $9.88\,\text{s}$ & $5.75$ &\\
-    \bottomrule
-  \end{tabular}
-  }%scalebox
-\caption{Average results for 30 runs of several examples presented in the paper and 
-in the video. For each run, a solution path is planned by Visibility-PRM (unless 
-`RRT' for RRT-connect is mentioned) as initial guess for each optimizer.
-For the PR2-crossing-arms example only, the right column represents the 
-distance that is traveled by the robot mobile base during the different paths.
-}
-\label{tab:results}
-\end{table}
-
-
+\begin{figure}
+	\centering
+	\subfigure[2D sliding robot (Fig.~\ref{2D_long})]{
+		\includegraphics[width=6.5cm,height=5.5cm]{potential2D_comp.png}
+		\label{fig:remainingLengthComp:potential2D}
+	}
+	\subfigure[Freeflyer-puzzle]{
+		\includegraphics[width=6.5cm,height=5.5cm]{puzzle_comp.png}
+		\label{fig:remainingLengthComp:puzzle}
+	}
+	\subfigure[UR5-with-spheres]{
+		\includegraphics[width=6.5cm,height=5.5cm]{ur5spheres_comp.png}
+		\label{fig:remainingLengthComp:ur5sphere}
+	}
+	\subfigure[PR2-crossing-arms]{
+		\includegraphics[width=6.5cm,height=5.5cm]{pr2crossing_comp_prune.png}
+		\label{fig:remainingLengthComp:pr2alone}
+	}
+	\subfigure[PR2-in-kitchen-1]{
+		\includegraphics[width=6.5cm,height=5.5cm]{pr2kitchen1_comp.png}
+		\label{fig:remainingLengthComp:pr2kitchen1}
+	}
+	\subfigure[Baxter-in-office]{
+		\includegraphics[width=6.5cm,height=5.5cm]{baxter_comp_prune.png}
+		\label{fig:remainingLengthComp:baxter}
+	}
+  \caption{Convergence graphs of the three optimizers during the optimization process. For each benchmark, the considered intial paths correspond to the ones of Figures~\ref{fig:trajectories} and~\ref{fig:trajectoriesbis}. The remaining path length relative to the initial one is represented. The dashed blue line is the final result of GB. For RS and PRS, the averages and standard deviations (in grey) over 50 launches are plotted.}
+  \label{fig:remainingLength}
+\end{figure}
 
 
 \bibliographystyle{tADR}
