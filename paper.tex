@@ -64,7 +64,8 @@
 \newcommand\kernel{\mbox{Ker }}
 \newcommand\U{\mathbf{u}}
 \newcommand\rotation{R}
-
+\newcommand\traj{\Gamma}
+\newcommand\velocity{\mathbf{v}}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{document}
 \graphicspath{{images/}}
@@ -483,7 +484,7 @@ $$
 $$
 \textcolor{blue}{These linear constraints are built from the linearization of a differentiable function $f$, which will be detailed in the following section.}
 
-\subsubsection{New constraint}
+\subsubsection{New constraint}\label{subsubsec:new-constraint}
 
 As illustrated in Figure~\ref{optim_grad}, let 
 us denote by $\tcolli$ the abscissa of the first collision detected on path 
@@ -506,10 +507,7 @@ constraint is on the position of $\body_1$ with respect to the environment.
 	\caption{Bodies representation in collision-configuration (left) and 
 	backtracked free-configuration (right). A contact point (i.e. any point in 
 	the intersection of the bodies) $\po_c$ can be returned by the Flexible 
-	Collision Library~\cite{fcl}, used to detect collisions. 
-%	The red $(\perp)$ 
-%	hyperplan is orthogonal to ($\po_2$,$\mathbf{u}$) and represents the motion 
-%	direction which is allowed by the constraint.
+	Collision Library~\cite{fcl}, used to detect collisions. Constraint $f$ defined by~(\ref{eq:f}) aims at keeping $\po_2$ in plane $\Pi$ fixed to $\body_1$.
 	}
 	\label{contact-points}
 \end{figure}
@@ -524,38 +522,36 @@ contact point expressed in the global frame
 (Figure~\ref{contact-points} left).
 \textcolor{red}{We denote by
   \begin{itemize}
-  \item $\po_1$ (resp. $\po_2$) the point belonging to body $\body_1$ (resp. $\body_2$) that coincides with $\po_c$ in configuration $\xx_{i+1}(\tcolli)$,
+  \item $\po_1^{loc}$ (resp. $\po_2^{loc}$) the coordinate vector of $\po_c$ in the local frame of  $\body_1$ (resp. $\body_2$),
   \item $M_1(\conf) \in SE(3)$ (resp. $M_2(\conf) \in SE(3)$) the rigid-body transformation representing the position of $\body_1$ (resp. $\body_2$) in the global frame in configuration $\conf$,
-  \item $\rotation_1(\conf) \in SO(3)$ (resp. $\rotation_2(\conf) \in SO(3)$) the rotation associated with $M_1(\conf)$ (resp. $M_2(\conf)$).
+  \item $M_2^1 (\conf) = M_1(\conf)^{-1} M_2(\conf)$ the position of $\body_2$ local frame in $\body_1$ local frame in configuration $\conf$,
+  \item $\po_1(\conf)$ (resp. $\po_2(\conf)$) the points moving with $\body_1$ (resp. $\body_2$) of local coordinate $\po_1^{loc}$ (resp. $\po_2^{loc}$) in $\body_1$ (resp. $\body_2$) local frame.
+  %% \item $\rotation_1(\conf) \in SO(3)$ (resp. $\rotation_2(\conf) \in SO(3)$) the rotation associated with $M_1(\conf)$ (resp. $M_2(\conf)$).
   \end{itemize}
-  The position of $\po_1$ (resp. $\po_2$) in the global reference frame depends on the configuration $\conf$ of the robot. We therefore denote $\po_1(\conf)$ (resp. $\po_2(\conf)$) this position.
-We define $\U$ as the unit vector attached to $\body_1$, linking points $\po_1$ and $\po_2$ in configuration $\xx_{i}(\tcolli)$ (Figure~\ref{contact-points} right):
+We define $\U$ as the coordinate vector of the unit vector linking points $\po_1$ and $\po_2$ in configuration $\xx_{i}(\tcolli)$, expressed in local frame of $\body_1$ (Figure~\ref{contact-points} right):
 $$
-\U (\conf) = \rotation_1(\conf)\rotation_1^{T}(\xx_{i}(\tcolli))\frac{\po_2(\xx_{i}(\tcolli)) - \po_1(\xx_{i}(\tcolli))}{\|\po_2(\xx_{i}(\tcolli)) - \po_1(\xx_{i}(\tcolli))\|}
+\U = \frac{M_2^1 (\xx_{i}(\tcolli))\po_2^{loc} - P_1^{loc}}{\|M_2^1 (\xx_{i}(\tcolli))\po_2^{loc} - P_1^{loc}\|}
 $$
-Note that
-\begin{itemize}
-\item $\U$ depends on the configuration of the robot $\conf$, since $\U$ moves with $\body_1$,
-\item $\U$ is well defined since configuration $\xx_{i}(\tcolli)$ is collision-free.
-\end{itemize}
+Note that $\U$ is well defined since configuration $\xx_{i}(\tcolli)$ is collision-free.
 }
 \textcolor{blue}{
-Let $g$ be the function mapping the projection of vector $\overrightarrow{\po_1\,\po_2}$ on $\mathbf{u}$ to a configuration $\conf$ . For any $\conf \in \CS$:
-$$
-g (\conf) = \left(\po_2(\conf) - \po_1(\conf) | \mathbf{u}\right)
-$$
+  Let $g$ be the real valued function mapping the projection of vector $\overrightarrow{\po_1\,\po_2}$ on $\mathbf{u}$ to a configuration $\conf$ . For any $\conf \in \CS$:
+\begin{equation}\label{eq:g}
+g (\conf) = \left(M_2^1 (\conf)\po_2^{loc} - P_1^{loc} | \U\right)
+\end{equation}
 }
 %which is calculated from the last collision-free path at abscissa $\tcolli$.
 
 Let $f$ be the function defined from $\CS^{wp}$ to $\real$ by:
-$$
+\begin{equation}\label{eq:f}
 f (\xx) = g(\xx (\tcolli))
-$$
-The constraint defined for any path $\xx$ by:
+\end{equation}
+\textcolor{red} {The constraint defined for any path $\xx$ by:
 \begin {equation}\label{eq:new-constraint}
 f(\xx) - f(\xx_{i}) = 0.
 \end {equation}
-aims at keeping colliding points $P_1$ and $P_2$ in configuration $\xx_{i+1} (\tcolli)$ apart in direction $\U$ defined by those points in configuration $\xx_{i} (\tcolli)$.
+aims at keeping point $\po_2$ in a plane fixed to $\body_1$, orthogonal to $\U$ and and passing by $\po_2$ in configuration $\xx_i(\tcolli)$ (Figure~\ref{contact-points} right).
+}
 We linearize the constraint around $\xx_{i}$: 
 $$
 \frac{\partial f}{\partial \xx}(\xx_i)(\xx - \xx_i) = 0
@@ -566,7 +562,7 @@ section. Then, a line is added in the constraint Jacobian matrix $\Jf_i$:
 \Jf_{i+1} &= \left(\begin{array}{c}L_1 \\ \vdots \\ L_{j+1}\end{array}\right)\ \mbox {with}\\
 L_{j+1} &= \frac{\partial f}{\partial \xx}(\xx_i)
 \end{align*}
-\textcolor{blue}{This step is denoted by the function \texttt{addCollisionConstraint}}.
+\textcolor{blue}{This step is performed by function \texttt{addCollisionConstraint}}.
 
 \vspace{0.4cm}
 
@@ -593,11 +589,10 @@ $$
 Thus the linearized constraint Jacobian $\frac{\partial f}{\partial \xx}(\xx_i)$ 
 is built by matrix 
 blocks using the Jacobian $\frac{\partial f}{\partial \conf}$ expressed in 
-each of the two waypoints and $\beta$. This stage \textcolor{blue}{is refered as 
-to \texttt{computeCollisionConstraint}}.
+each of the two waypoints and $\beta$. This stage \textcolor{blue}{is performed by \texttt{computeCollisionConstraint}}.
 
 
-\subsection{Convergence Analysis}
+\subsection{Convergence Analysis and algorithm refinment}
 
 \begin {figure}
   \centerline {
@@ -605,7 +600,7 @@ to \texttt{computeCollisionConstraint}}.
     \graphicspath{{./images/}}
     \input {images/convergence.pdf_tex}
   }
-  \caption {Illustration of linearized constraints: we want to minimize the quadratic cost $\frac{1}{2}\|\xx-\xx^*\|^2$ under the non-linear constraint $f(\xx)\leq 0$. $\alpha_{init}=\frac{1}{4}$. The algorithm starts from $\xx_0$. The first iterate is $\xx_1$ which satisfies the constraint. The second iterate is $\xx_2$ that does not satisfy the constraint. The algorithm backtracks to $\xx_1$ and inserts linear constraint $L_1: \frac{\partial f}{\partial \xx} (\xx_1)(\xx - \xx_1) = 0$. $\xx_3$ is the global minimum under $L_1$. As $\xx_3$ does not satisfy the constraint, the algorithm moves to $\xx_4$ that satisfies the constraints, and then to $\xx_5$ that does not. The algorithms backtracks to $\xx_4$, inserts constraint $L_2: \frac{\partial f}{\partial \xx} (\xx_2)(\xx - \xx_2) = 0$, and returns $\xx_4$ as a solution since the dimension of the search space is 0. Notice that the same non-linear constraint may give rise to several linear constraints. The convergence of the algorithm relies on the fact that the kernel of constraint $L2$ is not contained in the kernel of the current constraints ($L_1$ only here). The convergence analysis can be roughly summarized as follows. $L2$ to be linearly dependent of $L_1$ requires that $f$ is stationary along $L_1$ at $\xx_4$. This is unlikely (but possible) since $\xx_4$ is not far from the boundary of the domain defined by $f(\xx) \leq 0$. If $L_2$ was not linearly independent from $L_1$, Algorithm~\ref{algo:solveRedundant} would keep searching new iterates between $\xx_5$ and $\xx_4$. If by any chance constraint $f$ linearized around each of those collision-free iterates was each time linearly dependent from $L_1$ the iterates would converge to the boundary of the domain defined by $f(\xx) \leq 0$. By continuous differentiability of $f$, this would mean that $f$ is stationary at the boundary. In other words, the straight line passing by $\xx_1$ and $\xx_3$ would cross the boundary tangently (as in bottom left picture). This is possible but unlikely, unless the problem has been defined as such on purpose.}
+  \caption {\textcolor{red}{Illustration of linearly constrained quadratic program on a problem analogous to the path shortening problem: we want to minimize the quadratic cost $\frac{1}{2}\|\xx-\xx^*\|^2, \xx\in\real^2$ under the non-linear constraint $f(\xx)\leq 0$. $\alpha_{init}=\frac{1}{4}$. The algorithm starts from $\xx_0$. The first iterate is $\xx_1$ which satisfies the constraint. The second iterate is $\xx_2$ that does not satisfy the constraint. The algorithm backtracks to $\xx_1$ and inserts linear constraint $L_1: \frac{\partial f}{\partial \xx} (\xx_1)(\xx - \xx_1) = 0$. $\xx_3$ is the global minimum under $L_1$. As $\xx_3$ does not satisfy the constraint, the algorithm moves to $\xx_4$ that satisfies the constraints, and then to $\xx_5$ that does not. The algorithms backtracks to $\xx_4$, inserts constraint $L_2: \frac{\partial f}{\partial \xx} (\xx_2)(\xx - \xx_2) = 0$, and returns $\xx_4$ as a solution since the dimension of the search space is 0. Notice that the same non-linear constraint may give rise to several linear constraints. The convergence of the algorithm relies on the fact that the kernel of constraint $L2$ is not contained in the kernel of the current constraints ($L_1$ only here). The convergence analysis can be roughly summarized as follows. $L2$ to be linearly dependent of $L_1$ requires that $f$ is stationary along $L_1$ at $\xx_4$. This is unlikely (but possible) since $\xx_4$ is not far from the boundary of the domain defined by $f(\xx) \leq 0$. If $L_2$ was not linearly independent from $L_1$, The algorithm would keep searching new iterates between $\xx_5$ and $\xx_4$. If by any chance constraint $f$ linearized around each of those collision-free iterates was each time linearly dependent from $L_1$ the iterates would converge to the boundary of the domain defined by $f(\xx) \leq 0$. By continuous differentiability of $f$, this would mean that $f$ is stationary at the boundary. In other words, the straight line passing by $\xx_1$ and $\xx_3$ would cross the boundary tangently (as in bottom right picture). This is possible but unlikely, unless the problem has been defined as such on purpose.}}
   \label {fig:convergence}
 \end{figure}
 
@@ -615,11 +610,9 @@ From the definition of $\Jf_{i}$, it is straightforward that:
 \begin{equation}\label{eq:decreasing-kernel}
 \kernel \Jf_{i+1} \subset \kernel \Jf_{i}
 \end{equation}
-\textcolor{blue}{In other words, any iteration step $\p_i$ that complies with the 
-collision constraints on path $\xx_{i+1}$, necessarily sastifies $\xx_i$ constraints.}
 Let us assume that:
 \begin{equation}\label{eq:assumption-1}
-L_{k+1}\p_i \not= 0
+L_{j+1}\p_i \not= 0
 \end{equation}
 We will elaborate later on this assumption. This means that 
 $\p_{i}\notin\kernel \Jf_{i+1}$, and as $\p_{i}\in\kernel \Jf_{i}$, then:
@@ -630,53 +623,63 @@ From~(\ref{eq:decreasing-kernel}), we deduce that:
 $$
 \dim (\kernel \Jf_{i+1}) < \dim (\kernel \Jf_i)
 $$
-This result proves that under assumption~(\ref{eq:assumption-1}), each added constraint 
-is linearly independent from the 
+This result proves that under assumption~(\ref{eq:assumption-1}), each additional constraint is linearly independent from the 
 previous ones, and thus our algorithm terminates in a finite number of iterations.
 
 \vspace{0.2cm}
 
 \subsubsection{Note about assumption~(\ref{eq:assumption-1})}%
 \noindent
-Let us consider the following trajectory:
-\begin{equation}\label{eq:trajectory}
-\conf (t) = (\xx_{i} + t\, \alpha_i \p_{i}) (\tcolli), \ t \in [0,1]
+\textcolor{red}{As in the previous section, we assume that $\xx_i$ is collision-free and that $\xx_{i+1}$ is in collision at abscissa $\tcolli$.
+According to~(\ref{eq:f}), the evaluation of the constraint function $f$ along the iteration line $\xx_i + t\alpha_i \p_i,\ t\in [0,1]$ going from $\xx_i$ to $\xx_{i+1}$ can be written as follows:
+\begin{equation}\label{eq:f-along-pi}
+f (\xx_i + t\alpha_i \p_i) = g \left((\xx_i + t\alpha_i \p_i)(\tcolli)\right).
 \end{equation}
-\textcolor{blue}{where $\xx_i$ is still collision-free and $\xx_{i+1}$ 
-has its first collision detected at abcissa $\tcolli$.}
-The motion $\conf(t)$ is defined by taking a constant abscissa $\tcolli$ and by 
-moving from the 
-path $\xx_i$ along the step $\p_i$. Note that configuration $\xx_{i+1}(\tcolli)$ is reached when $t=1$.
+The argument of function $g$ above is a trajectory in the robot configuration space that we denote by $\traj$:
+\begin{equation}\label{eq:trajectory}
+\traj (t) = (\xx_{i} + t\, \alpha_i \p_{i}) (\tcolli), \ t \in [0,1]
+\end{equation}
+The trajectory $\traj(t)$ is defined by taking the constant abscissa $\tcolli$ and by 
+moving from 
+path $\xx_i$ along step $\p_i$. Note that configuration $\xx_{i+1}(\tcolli)$ is reached when $t=1$.
+Substituting~(\ref{eq:trajectory}) into~(\ref{eq:f-along-pi}) and differentiating with respect  to $t$ yields
+\begin{align}
+f (\xx_i + t\alpha_i \p_i) &= g (\traj (t)) \\
+\label{eq:df/dx}
+\alpha_i \frac{\partial f}{\partial \xx} (\xx_i + t\alpha_i \p_i)\p_i &=
+\frac{d}{dt}g (\traj (t))
+\end{align}
+From the definition~(\ref{eq:g}) of $g$, the right hand side of~(\ref{eq:df/dx}) represents the velocity of point $P_2$ in reference frame $\body_1$ projected on vector $\U$.
+}
 
-Thus the velocity of point $\po_2(\conf(t))$ in the reference frame of $\body_1$ projected onto $\mathbf{u}$ along the motion of the robot is given by:
-$$
- \dot{\conf}(t) = \alpha_i \frac{\partial f}{\partial \xx}(\xx_i + t\alpha_i\xx_{i+1})\p_i
-$$
-
-
+\textcolor{red}{
 Therefore the following expressions
-% \frac{\partial \conf}{\partial t}(0) = \alpha_i \frac{\partial f}{\partial \xx}(\xx_{i})\p_i \ \text{and} \ \frac{\partial \conf}{\partial t}(1) = \alpha_i \frac{\partial f}{\partial \xx}(\xx_{i+1})\p_i
+\begin{align*}
+\alpha_i \frac{\partial f}{\partial \xx} (\xx_i)\p_i = \frac{d}{dt}g (\traj (0)) & &
+\alpha_i \frac{\partial f}{\partial \xx} (\xx_{i+1})\p_i =\frac{d}{dt}g (\traj (1))
+\end{align*}
+correspond to $(\velocity_{\po_2/\body_1}|\mathbf{u})$, respectively in configurations $\xx_{i}(\tcolli)$ and $\xx_{i+1}(\tcolli)$, where $\velocity_{\po_2/\body_1}$ represents the velocity of point $P_2$ in reference frame $\body_1$. 
+Note that Assumption~(\ref{eq:assumption-1}) is equivalent to the first above equality to be different from 0. According to the geometric interpretation, Assumption~(\ref{eq:assumption-1}) is violated if and only if $\velocity_{\po_2/\body_1}$ is orthogonal to $\U$. Although very unlikely, this case might appear for some new constraint. In this case, inserting constraint $L_{j+1}$ is useless since
 $$
-\dot{\conf}(0) = \alpha_i \frac{\partial f}{\partial \xx}(\xx_{i})\p_i \ \ \text{and} \ \ \dot{\conf}(1) = \alpha_i \frac{\partial f}{\partial \xx}(\xx_{i+1})\p_i
+\kernel \Jf_i = \kernel \Jf_{i+1}.
 $$
-correspond to $(\dot{\po_2}|\mathbf{u})$, respectively in configurations $\xx_{i}(\tcolli)$ and $\xx_{i+1}(\tcolli)$. The term $\dot{\conf}(1)$ being equal to zero requires either:
-\begin {enumerate}
-\item that $\po_1$ and $\po_2$ come to contact at zero velocity, or
-\item the velocity of $\po_2$ in the reference frame of $\body_1$ is orthogonal to 
-$\mathbf{u}$ at contact ($t=1$).
-\end {enumerate}
-The first case is very unlikely and almost never encountered in real applications, 
-except if the user builds such a case on purpose.
-The second case may appear and can be noted by a rank loss of $\Jf_{i+1}$.
-Then we do not directly insert the new constraint. Instead, we process intermediate 
-iterations until the redundancy vanishes, as explained in function 
-\texttt{findNewConstraint} in Algorithm~\ref{algo:solveRedundant}, and illustrated in Figure~\ref{fig:convergence-diagram}.
+}
 
+\subsubsection {Algorithm refinment}
 
-After producing an intermediate iteration $\xx_{i+2}$ where $\alpha_i$ has
-been halved, the obtained path is tested for collisions. If it is collision-free, the 
-constraint is now linearized around it. Otherwise, new contact points are taken 
-on it, and the constraint is linearized around the latest free path.
+\textcolor{red}{
+When the new constraint is not linearly independent from the set of previous constraints, the algorithm enters an additional loop in order to find a new constraint that is linearly independent. This loop is performed by Algorithm~\ref{algo:solveRedundant} and illustrated in Figure~\ref{fig:convergence-diagram}. The loop keeps looking for paths along line segment $[\xx_{i},\xx_{i+1}]$ by dichotomy. A pair containing the latest free path and the latest path in collision, denoted by $(\xx_{Free}, \xx_{Coll})$ is stored along the loop. New iterations are chosen in the middle of this pair. 
+\begin{itemize}
+\item If the new path is collision-free, it replaces $\xx_{Free}$ in the pair.
+\item If the new path is in collision, it replaces $\xx_{Coll}$ in the pair.
+\end{itemize}
+In both cases, a new constraint is built following the method described in Section~\ref{subsubsec:new-constraint}. Two cases are then possible:
+\begin{enumerate}
+\item at some point in the loop the new constraint is linearly independent from the previous constraints. The new constraint is added to $\Jf_{i}$ to give rise to $\Jf_{i+1}$ and the loop is interrupted, or
+\item each new constraint is linearly dependent from the previous constraints and the loop never ends.
+\end{enumerate}
+In the second case, the iterations of the loop converge to a path that we denote by $\bar{\xx}$. $\xx_{Free}$ and $\xx_{Coll}$ also both converge to $\bar{\xx}$. Note that $\bar{\xx}$ lies at the boundary between free paths and paths in collision along the search line.
+}
 
 \begin{figure}
 	\centering
@@ -689,11 +692,11 @@ on it, and the constraint is linearized around the latest free path.
 	The trajectory is represented in the configuration space (left) and in the 
 	workspace with the colliding bodies (right).}
 	Note that a case with 
-	$(\dot{\po_2}(\xx_{Free})|\mathbf{u})=0$ is considered, so $\p$ already complies 
+	$(\velocity_{\po_2/\body_1}(\xx_{Free})|\mathbf{u})=0$ is considered, so $\p$ already complies 
 	with the constraint that should be added if no redundancy was tracked. Therefore, 
 	Algorithm~\ref{algo:solveRedundant} will produce one intermediate step
 	$\xx$ (gray path and clear bodies). $\xx$ is collision-free and 
-	$(\dot{\po_2}(\xx)|\mathbf{u})\neq 0$ so the redundancy is solved, 
+	$(\velocity_{\po_2/\body_1}(\xx)|\mathbf{u})\neq 0$ so the redundancy is solved, 
 	returning the new constraint.}
 	\label{fig:convergence-diagram}
 \end{figure}
