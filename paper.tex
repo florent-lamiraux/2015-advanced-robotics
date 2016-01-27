@@ -493,7 +493,7 @@ detected. Two cases are possible:
 \item the collision occurred between a body of the robot $\body_1$ and the 
 environment.
 \end{enumerate}
-In the rest of this section, the first case will only be considered. Reasoning 
+In the rest of this section, the first case only will be considered. Reasoning 
 about the second case is similar, except that the 
 constraint is on the position of $\body_1$ with respect to the environment.
 
@@ -508,8 +508,8 @@ constraint is on the position of $\body_1$ with respect to the environment.
 	\label{contact-points}
 \end{figure}
 
-The principle of the method is to compute a \textcolor{blue}{linear} constraint on the initialized on the 
-free-configuration $\xx_{i}(\tcolli)$ to avoid the encountered collision $\xx_{i+1}
+The principle of the method is to compute a \textcolor{blue}{linear} constraint initialized on the 
+free configuration $\xx_{i}(\tcolli)$ to avoid the encountered collision $\xx_{i+1}
 (\tcolli)$. To handle this, we introduce a one-dimensional constraint based on the 
 orthogonal direction of the encountered collision.
 
@@ -519,7 +519,7 @@ contact point expressed in the global frame
 \textcolor{red}{We denote by
   \begin{itemize}
   \item $\po_1^{loc}$ (resp. $\po_2^{loc}$) the coordinate vector of $\po_c$ in the local frame of  $\body_1$ (resp. $\body_2$),
-  \item $M_1(\conf) \in SE(3)$ (resp. $M_2(\conf) \in SE(3)$) the rigid-body transformation representing the position of $\body_1$ (resp. $\body_2$) in the global frame in configuration $\conf$,
+  \item $M_1(\conf) \in SE(3)$ (resp. $M_2(\conf) \in SE(3)$) the rigid-body transformation representing the position of $\body_1$ (resp. $\body_2$) in the global frame, in configuration $\conf$,
   \item $M_2^1 (\conf) = M_1(\conf)^{-1} M_2(\conf)$ the position of $\body_2$ local frame in $\body_1$ local frame in configuration $\conf$,
   \item $\po_1(\conf)$ (resp. $\po_2(\conf)$) the points moving with $\body_1$ (resp. $\body_2$) of local coordinate $\po_1^{loc}$ (resp. $\po_2^{loc}$) in $\body_1$ (resp. $\body_2$) local frame.
   %% \item $\rotation_1(\conf) \in SO(3)$ (resp. $\rotation_2(\conf) \in SO(3)$) the rotation associated with $M_1(\conf)$ (resp. $M_2(\conf)$).
@@ -622,8 +622,6 @@ $$
 This result proves that under assumption~(\ref{eq:assumption-1}), each additional constraint is linearly independent from the 
 previous ones, and thus our algorithm terminates in a finite number of iterations.
 
-\vspace{0.2cm}
-
 \subsubsection{Note about assumption~(\ref{eq:assumption-1})}%
 \noindent
 \textcolor{red}{As in the previous section, we assume that $\xx_i$ is collision-free and that $\xx_{i+1}$ is in collision at abscissa $\tcolli$.
@@ -645,7 +643,9 @@ f (\xx_i + t\alpha_i \p_i) &= g (\traj (t)) \\
 \alpha_i \frac{\partial f}{\partial \xx} (\xx_i + t\alpha_i \p_i)\p_i &=
 \frac{d}{dt}g (\traj (t))
 \end{align}
+\begin{property}\label{prop:geometric-reasoning}
 From the definition~(\ref{eq:g}) of $g$, the right hand side of~(\ref{eq:df/dx}) represents the velocity of point $P_2$ in reference frame $\body_1$ projected on vector $\U$.
+\end{property}
 }
 
 \textcolor{red}{
@@ -674,7 +674,23 @@ In both cases, a new constraint is built following the method described in Secti
 \item at some point in the loop the new constraint is linearly independent from the previous constraints. The new constraint is added to $\Jf_{i}$ to give rise to $\Jf_{i+1}$ and the loop is interrupted, or
 \item each new constraint is linearly dependent from the previous constraints and the loop never ends.
 \end{enumerate}
-In the second case, the iterations of the loop converge to a path that we denote by $\bar{\xx}$. $\xx_{Free}$ and $\xx_{Coll}$ also both converge to $\bar{\xx}$. Note that $\bar{\xx}$ lies at the boundary between free paths and paths in collision along the search line.
+In the second case, the iterations of the loop converge to a path that we denote by $\bar{\xx}$. $\xx_{Free}$ and $\xx_{Coll}$ also both converge to $\bar{\xx}$. Note that $\bar{\xx}$ lies at the boundary between free paths and paths in collision along the search line. $\bar{\xx}$ necessarily lies at the boundary between free paths and paths in collision. Let us denote by $\bar{\kappa}$ the abscissa along $\bar{\xx}$ where $\body_1$ and $\body_2$ come to contact, and let us denote by $\bar{\po}$ the contact point.
+}
+
+\textcolor{red}{
+At each iteration, the new linear constraint
+$$
+L_{j+1} = \frac{\partial f}{\partial\xx} (\xx_{Free})
+$$
+is tested. As iterations $\xx_{Free}$ and $\xx_{Coll}$ tend toward $\bar{\xx}$, it can be established by a geometric reasoning analogous to Property~\ref{prop:geometric-reasoning}, that
+$L_{j+1} \p_i$ tends to the norm of the velocity of point $\bar{\po}$ belonging to $\body_2$ in the frame of $\body_1$. The following property summarizes the result of this section.
+}
+
+\textcolor{red}{
+\begin{property}\label{prop:convergence}
+As long as along iteration $\p_i$, the trajectory $(\xx_i+t\alpha_i\p_i)(\bar{\kappa})$ does not enter in collision with contact point velocity equal to 0 in the frame of $\body_1$, Algorithm~\ref{algo:solveRedundant} converges in a finite number of steps.
+\end{property}
+The above property means that the gradient-based path length optimization algorithm described in this paper converges in all cases, except for ill-defined problems.
 }
 
 \begin{figure}
