@@ -66,6 +66,7 @@
 \newcommand\rotation{R}
 \newcommand\traj{\Gamma}
 \newcommand\velocity{\mathbf{v}}
+\newcommand\todo{\textcolor{red}{NOT FINISHED}}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{document}
 \graphicspath{{images/}}
@@ -164,7 +165,11 @@ Figure~\ref{decoupled_DOF_optimization} presents another situation where RS
 will always fail to optimize the initial path, since it cannot decouple the 
 robot degrees of freedom (DOF) on which the optimization occurs. This problem is 
 addressed by our method.
-
+\textcolor{blue}{Processing a path 
+pruning~\cite{GeraertsIJRR07}, in order to remove redundant nodes from the initial 
+path, is a classical preliminary step for path length shortening. 
+A pruning will efficiently solve the Figure~\ref{local_box_optim} issue, however it 
+will fail tackling the Figure~\ref{decoupled_DOF_optimization} one, as RS.}
 
 On the other hand, numerical
 optimization methods like CHOMP~\cite{chompIjrr} can be used as a
@@ -206,9 +211,9 @@ evaluated, therefore no pre-processing of either the
 robot or environment models is necessary to increase distance computation speed. 
 Respecting the problem geometry also 
 preserves that a solution can still be found, e.g. for narrow passages as holes or 
-grippers. The method is also repeatable since no randomness is introduced. The underlying optimization algorithm is a \textcolor{blue}{linearly constrained} quadratic program.
+grippers. The method is also repeatable since no randomness is introduced. The underlying optimization algorithm is a \textcolor{blue}{Linearly Constrained Quadratic Program (LCQP)}.
 
-\textcolor{blue}{Another important feature of our contribution is that we optimize paths on the robot configuration space in a proper mathematical way. Most other optimization algorithms represent $SO3$ rotations by a vector directed along the rotation axis and the norm of which is the rotation angle, also known as the exponential map of $so3$, or even worse by Euler angles.}
+\textcolor{blue}{Another important feature of our contribution is that we optimize paths on the robot configuration space in a proper mathematical way. Most other optimization algorithms represent $SO(3)$ rotations by a vector directed along the rotation axis and the norm of which is the rotation angle, also known as the exponential map of $SO(3)$, or even worse by Euler angles.}
 
 Related work is presented in Section II. Section III explains how the 
 path-optimizer works, from the formulation of the problem to the implemented
@@ -282,7 +287,7 @@ method cannot solve Figure~\ref{decoupled_DOF_optimization} issue.
 
 \section{PATH OPTIMIZATION} \label{section:path_optim}
 
-\textcolor{blue}{This section describes the settling of the Gradient-based optimizer. The method works as a classical Linearly Constrained Quadratic Program (LCQP), reducing the path length with a cost function and avoid collisions with constraints. Details of the LCQP elements will be given in the following subsections, and associated to functions that will populate the global algorithm, presented in the last section.}
+\textcolor{blue}{This section describes the establishment of the Gradient-based optimizer. The method works as a classical Linearly Constrained Quadratic Program (LCQP), reducing the path length expressed as a cost function and avoid collisions with linearized constraints. Details of the LCQP elements will be given in the following subsections, and associated to functions that will populate the global algorithm, presented in the last section.}
 
 \subsection {Kinematic chain}
 
@@ -384,8 +389,7 @@ interval $[0,1]$ into $\CS$: $\xx(0) = q_0$, $\xx(1) = q_{wp+1}$.
 Finally, we use a continuous 
 collision checker inspired of~\cite{SchwarzerExactCollision} to validate our 
 paths and to return the first colliding configuration 
-\textcolor{blue}{and its abcissa} along a path. \textcolor{blue}{This stage 
-is handled by a function \texttt{validatePath}, which returns $true$ if the given path is collision-free}.
+\textcolor{blue}{and its abcissa} along a path.
 
 \subsubsection{Cost}
 Let $W\in\real^{p\times p}$ be a diagonal matrix of weights:
@@ -520,7 +524,7 @@ orthogonal direction of the encountered collision.
 In the collision-configuration $\xx_{i+1}(\tcolli)$, let $\po_c\in \real^3$ be a 
 contact point expressed in the global frame 
 (Figure~\ref{contact-points} left).
-\textcolor{red}{We denote by
+\textcolor{blue}{We denote by
   \begin{itemize}
   \item $\po_1^{loc}$ (resp. $\po_2^{loc}$) the coordinate vector of $\po_c$ in the local frame of  $\body_1$ (resp. $\body_2$),
   \item $M_1(\conf) \in SE(3)$ (resp. $M_2(\conf) \in SE(3)$) the rigid-body transformation representing the position of $\body_1$ (resp. $\body_2$) in the global frame in configuration $\conf$,
@@ -530,14 +534,14 @@ contact point expressed in the global frame
   \end{itemize}
 We define $\U$ as the coordinate vector of the unit vector linking points $\po_1$ and $\po_2$ in configuration $\xx_{i}(\tcolli)$, expressed in local frame of $\body_1$ (Figure~\ref{contact-points} right):
 $$
-\U = \frac{M_2^1 (\xx_{i}(\tcolli))\po_2^{loc} - P_1^{loc}}{\|M_2^1 (\xx_{i}(\tcolli))\po_2^{loc} - P_1^{loc}\|}
+\U = \frac{M_2^1 (\xx_{i}(\tcolli))\po_2^{loc} - \po_1^{loc}}{\|M_2^1 (\xx_{i}(\tcolli))\po_2^{loc} - \po_1^{loc}\|}
 $$
 Note that $\U$ is well defined since configuration $\xx_{i}(\tcolli)$ is collision-free.
 }
 \textcolor{blue}{
   Let $g$ be the real valued function mapping the projection of vector $\overrightarrow{\po_1\,\po_2}$ on $\mathbf{u}$ to a configuration $\conf$ . For any $\conf \in \CS$:
 \begin{equation}\label{eq:g}
-g (\conf) = \left(M_2^1 (\conf)\po_2^{loc} - P_1^{loc} | \U\right)
+g (\conf) = \left(M_2^1 (\conf)\po_2^{loc} - \po_1^{loc} | \U\right)
 \end{equation}
 }
 %which is calculated from the last collision-free path at abscissa $\tcolli$.
@@ -546,7 +550,7 @@ Let $f$ be the function defined from $\CS^{wp}$ to $\real$ by:
 \begin{equation}\label{eq:f}
 f (\xx) = g(\xx (\tcolli))
 \end{equation}
-\textcolor{red} {The constraint defined for any path $\xx$ by:
+\textcolor{blue} {The constraint defined for any path $\xx$ by:
 \begin {equation}\label{eq:new-constraint}
 f(\xx) - f(\xx_{i}) = 0.
 \end {equation}
@@ -562,7 +566,7 @@ section. Then, a line is added in the constraint Jacobian matrix $\Jf_i$:
 \Jf_{i+1} &= \left(\begin{array}{c}L_1 \\ \vdots \\ L_{j+1}\end{array}\right)\ \mbox {with}\\
 L_{j+1} &= \frac{\partial f}{\partial \xx}(\xx_i)
 \end{align*}
-\textcolor{blue}{This step is performed by function \texttt{addCollisionConstraint}}.
+\textcolor{blue}{This stage is performed by a function \texttt{addCollisionConstraint}}.
 
 \vspace{0.4cm}
 
@@ -600,7 +604,7 @@ each of the two waypoints and $\beta$. This stage \textcolor{blue}{is performed 
     \graphicspath{{./images/}}
     \input {images/convergence.pdf_tex}
   }
-  \caption {\textcolor{red}{Illustration of linearly constrained quadratic program on a problem analogous to the path shortening problem: we want to minimize the quadratic cost $\frac{1}{2}\|\xx-\xx^*\|^2, \xx\in\real^2$ under the non-linear constraint $f(\xx)\leq 0$. $\alpha_{init}=\frac{1}{4}$. The algorithm starts from $\xx_0$. The first iterate is $\xx_1$ which satisfies the constraint. The second iterate is $\xx_2$ that does not satisfy the constraint. The algorithm backtracks to $\xx_1$ and inserts linear constraint $L_1: \frac{\partial f}{\partial \xx} (\xx_1)(\xx - \xx_1) = 0$. $\xx_3$ is the global minimum under $L_1$. As $\xx_3$ does not satisfy the constraint, the algorithm moves to $\xx_4$ that satisfies the constraints, and then to $\xx_5$ that does not. The algorithms backtracks to $\xx_4$, inserts constraint $L_2: \frac{\partial f}{\partial \xx} (\xx_2)(\xx - \xx_2) = 0$, and returns $\xx_4$ as a solution since the dimension of the search space is 0. Notice that the same non-linear constraint may give rise to several linear constraints. The convergence of the algorithm relies on the fact that the kernel of constraint $L2$ is not contained in the kernel of the current constraints ($L_1$ only here). The convergence analysis can be roughly summarized as follows. $L2$ to be linearly dependent of $L_1$ requires that $f$ is stationary along $L_1$ at $\xx_4$. This is unlikely (but possible) since $\xx_4$ is not far from the boundary of the domain defined by $f(\xx) \leq 0$. If $L_2$ was not linearly independent from $L_1$, The algorithm would keep searching new iterates between $\xx_5$ and $\xx_4$. If by any chance constraint $f$ linearized around each of those collision-free iterates was each time linearly dependent from $L_1$ the iterates would converge to the boundary of the domain defined by $f(\xx) \leq 0$. By continuous differentiability of $f$, this would mean that $f$ is stationary at the boundary. In other words, the straight line passing by $\xx_1$ and $\xx_3$ would cross the boundary tangently (as in bottom right picture). This is possible but unlikely, unless the problem has been defined as such on purpose.}}
+  \caption {\textcolor{blue}{Illustration of linearly constrained quadratic program on a problem analogous to the path shortening problem: we want to minimize the quadratic cost $\frac{1}{2}\|\xx-\xx^*\|^2, \xx\in\real^2$ under the non-linear constraint $f(\xx)\leq 0$. $\alpha_{init}=\frac{1}{4}$. The algorithm starts from $\xx_0$. The first iterate is $\xx_1$ which satisfies the constraint. The second iterate is $\xx_2$ that does not satisfy the constraint. The algorithm backtracks to $\xx_1$ and inserts linear constraint $L_1: \frac{\partial f}{\partial \xx} (\xx_1)(\xx - \xx_1) = 0$. $\xx_3$ is the global minimum under $L_1$. As $\xx_3$ does not satisfy the constraint, the algorithm moves to $\xx_4$ that satisfies the constraints, and then to $\xx_5$ that does not. The algorithms backtracks to $\xx_4$, inserts constraint $L_2: \frac{\partial f}{\partial \xx} (\xx_2)(\xx - \xx_2) = 0$, and returns $\xx_4$ as a solution since the dimension of the search space is 0. Notice that the same non-linear constraint may give rise to several linear constraints. The convergence of the algorithm relies on the fact that the kernel of constraint $L2$ is not contained in the kernel of the current constraints ($L_1$ only here). The convergence analysis can be roughly summarized as follows. $L2$ to be linearly dependent of $L_1$ requires that $f$ is stationary along $L_1$ at $\xx_4$. This is unlikely (but possible) since $\xx_4$ is not far from the boundary of the domain defined by $f(\xx) \leq 0$. If $L_2$ was not linearly independent from $L_1$, The algorithm would keep searching new iterates between $\xx_5$ and $\xx_4$. If by any chance constraint $f$ linearized around each of those collision-free iterates was each time linearly dependent from $L_1$ the iterates would converge to the boundary of the domain defined by $f(\xx) \leq 0$. By continuous differentiability of $f$, this would mean that $f$ is stationary at the boundary. In other words, the straight line passing by $\xx_1$ and $\xx_3$ would cross the boundary tangently (as in bottom right picture). This is possible but unlikely, unless the problem has been defined as such on purpose.}}
   \label {fig:convergence}
 \end{figure}
 
@@ -630,7 +634,7 @@ previous ones, and thus our algorithm terminates in a finite number of iteration
 
 \subsubsection{Note about assumption~(\ref{eq:assumption-1})}%
 \noindent
-\textcolor{red}{As in the previous section, we assume that $\xx_i$ is collision-free and that $\xx_{i+1}$ is in collision at abscissa $\tcolli$.
+\textcolor{blue}{As in the previous section, we assume that $\xx_i$ is collision-free and that $\xx_{i+1}$ is in collision at abscissa $\tcolli$.
 According to~(\ref{eq:f}), the evaluation of the constraint function $f$ along the iteration line $\xx_i + t\alpha_i \p_i,\ t\in [0,1]$ going from $\xx_i$ to $\xx_{i+1}$ can be written as follows:
 \begin{equation}\label{eq:f-along-pi}
 f (\xx_i + t\alpha_i \p_i) = g \left((\xx_i + t\alpha_i \p_i)(\tcolli)\right).
@@ -649,25 +653,71 @@ f (\xx_i + t\alpha_i \p_i) &= g (\traj (t)) \\
 \alpha_i \frac{\partial f}{\partial \xx} (\xx_i + t\alpha_i \p_i)\p_i &=
 \frac{d}{dt}g (\traj (t))
 \end{align}
-From the definition~(\ref{eq:g}) of $g$, the right hand side of~(\ref{eq:df/dx}) represents the velocity of point $P_2$ in reference frame $\body_1$ projected on vector $\U$.
+From the definition~(\ref{eq:g}) of $g$, the right hand side of~(\ref{eq:df/dx}) represents the velocity of point $\po_2$ in reference frame $\body_1$ projected on vector $\U$.
 }
 
-\textcolor{red}{
+\begin{figure}
+	\centering
+	\includegraphics[width=15.8cm]{convergence-diagram.pdf}
+	\caption{\textcolor{blue}{Considering a trajectory 
+	$\traj(t) = (\xx_{Free} + t\, \alpha \p)(\kappa)$ 
+	with $\xx_{Coll} = \xx_{Free} + \alpha\p$ ($\xx_{Free}$, $\xx_{Coll}$, $\p$ 
+	and $\kappa$ are respectively collision-free path, in-collision path, 
+	iteration step and collision-abcissa).
+	The trajectory is represented in the configuration space (left) and in the 
+	workspace with the colliding bodies (right).}
+	Note that a case with 
+	$(\velocity_{\po_2/\body_1}(\xx_{Free})|\mathbf{u})=0$ is considered, 
+	so $\p$ already complies 
+	with the constraint that should be added if no redundancy was 
+	tracked. Therefore, 
+	Algorithm~\ref{algo:solveRedundant} will produce one intermediate step
+	$\xx$ (gray path and clear bodies). $\xx$ is collision-free and 
+	$(\velocity_{\po_2/\body_1}(\xx)|\mathbf{u})\neq 0$ so the redundancy is solved, 
+	returning the new constraint.}
+	\label{fig:convergence-diagram}
+\end{figure}
+
+\textcolor{blue}{
 Therefore the following expressions
 \begin{align*}
 \alpha_i \frac{\partial f}{\partial \xx} (\xx_i)\p_i = \frac{d}{dt}g (\traj (0)) & &
 \alpha_i \frac{\partial f}{\partial \xx} (\xx_{i+1})\p_i =\frac{d}{dt}g (\traj (1))
 \end{align*}
-correspond to $(\velocity_{\po_2/\body_1}|\mathbf{u})$, respectively in configurations $\xx_{i}(\tcolli)$ and $\xx_{i+1}(\tcolli)$, where $\velocity_{\po_2/\body_1}$ represents the velocity of point $P_2$ in reference frame $\body_1$. 
+correspond to $(\velocity_{\po_2/\body_1}|\mathbf{u})$, respectively in configurations $\xx_{i}(\tcolli)$ and $\xx_{i+1}(\tcolli)$, where $\velocity_{\po_2/\body_1}$ represents the velocity of point $\po_2$ in reference frame $\body_1$. 
 Note that Assumption~(\ref{eq:assumption-1}) is equivalent to the first above equality to be different from 0. According to the geometric interpretation, Assumption~(\ref{eq:assumption-1}) is violated if and only if $\velocity_{\po_2/\body_1}$ is orthogonal to $\U$. Although very unlikely, this case might appear for some new constraint. In this case, inserting constraint $L_{j+1}$ is useless since
 $$
 \kernel \Jf_i = \kernel \Jf_{i+1}.
 $$
 }
 
+\begin{algorithm}
+\begin{algorithmic}%[1] % line numerotation
+\INPUT{$\xx_{Free}$ latest collision-free path, $\xx_{Coll}$ current path with collisions, $\p$ current iteration step}
+\OUTPUT{linearized constraint $\frac{\partial f}{\partial \xx} (\xx_{Free})$}
+\Require constraint $\frac{\partial f}{\partial \xx} (\xx_{Free})$ built from $\xx_{Coll}$ would produce a rank loss in constraint Jacobian $\Jf$
+\State $solved \gets false$
+\While{($\textbf{not}(solved)$)}
+	%\State $\p = \texttt{computeIterate}()$
+	\State $\alpha \gets 0.5\alpha$
+	\State $\xx \gets \xx_{Free} + \alpha\,\p$
+	\If{(\texttt{validatePath}($\xx$))}
+		\State $\xx_{Free} \gets \xx$
+	\Else
+		\State $\xx_{Coll} \gets \xx$
+	\EndIf
+	\State $\frac{\partial f}{\partial \xx} (\xx_{Free}) \gets$\texttt{computeCollisionConstraint}($\xx_{Coll}$, $\xx_{Free}$)
+	\State $solved \gets$ \texttt{isFullRank}($\Jf$ , $\frac{\partial f}{\partial \xx} (\xx_{Free})$)
+\EndWhile
+\end{algorithmic}
+\caption{Description of \texttt{findNewConstraint}() which returns a linearly 
+independent constraint w.r.t. previous constraints stacked in $\Jf$.} 
+\label{algo:solveRedundant}
+\end{algorithm}
+
 \subsubsection {Algorithm refinment}
 
-\textcolor{red}{
+\textcolor{blue}{
 When the new constraint is not linearly independent from the set of previous constraints, the algorithm enters an additional loop in order to find a new constraint that is linearly independent. This loop is performed by Algorithm~\ref{algo:solveRedundant} and illustrated in Figure~\ref{fig:convergence-diagram}. The loop keeps looking for paths along line segment $[\xx_{i},\xx_{i+1}]$ by dichotomy. A pair containing the latest free path and the latest path in collision, denoted by $(\xx_{Free}, \xx_{Coll})$ is stored along the loop. New iterations are chosen in the middle of this pair. 
 \begin{itemize}
 \item If the new path is collision-free, it replaces $\xx_{Free}$ in the pair.
@@ -681,50 +731,7 @@ In both cases, a new constraint is built following the method described in Secti
 In the second case, the iterations of the loop converge to a path that we denote by $\bar{\xx}$. $\xx_{Free}$ and $\xx_{Coll}$ also both converge to $\bar{\xx}$. Note that $\bar{\xx}$ lies at the boundary between free paths and paths in collision along the search line.
 }
 
-\begin{figure}
-	\centering
-	\includegraphics[width=15.8cm]{convergence-diagram.pdf}
-	\caption{\textcolor{blue}{Considering a trajectory 
-	$\conf (t) = (\xx_{Free} + t\, \alpha \p)(\kappa)$ 
-	with $\xx_{Coll} = \xx_{Free} + \alpha\p$ ($\xx_{Free}$, $\xx_{Coll}$, $\p$ 
-	and $\kappa$ respectively collision-free path, in-collision path, iteration step 
-	and collision-abcissa).
-	The trajectory is represented in the configuration space (left) and in the 
-	workspace with the colliding bodies (right).}
-	Note that a case with 
-	$(\velocity_{\po_2/\body_1}(\xx_{Free})|\mathbf{u})=0$ is considered, so $\p$ already complies 
-	with the constraint that should be added if no redundancy was tracked. Therefore, 
-	Algorithm~\ref{algo:solveRedundant} will produce one intermediate step
-	$\xx$ (gray path and clear bodies). $\xx$ is collision-free and 
-	$(\velocity_{\po_2/\body_1}(\xx)|\mathbf{u})\neq 0$ so the redundancy is solved, 
-	returning the new constraint.}
-	\label{fig:convergence-diagram}
-\end{figure}
-
-\begin{algorithm}[H]
-\begin{algorithmic}%[1] % line numerotation
-\INPUT{$\xx_{Free}$ latest collision-free path, $\xx_{Coll}$ current path with collisions, $\p$ current iteration step}
-\OUTPUT{linearized constraint $\frac{\partial f}{\partial \xx} (\xx_{Free})$}
-\Require constraint $\frac{\partial f}{\partial \xx} (\xx_{Free})$ built from $\xx_{Coll}$ would produce a rank loss in constraint Jacobian $\Jf$
-\State $solved \gets false$
-\While{($\textbf{not}(solved)$)}
-	%\State $\p = \texttt{computeIterate}()$
-	%\State $minReached = (||\p||<10^{-3} \textbf{ or } \alpha=1)$
-	\State $\xx \gets \xx_{Free} + 0.5\alpha\,\p$
-	\If{(\texttt{validatePath}($\xx$))}
-		\State $\xx_{Free} \gets \xx$
-	\Else
-		\State $\xx_{Coll} \gets \xx$
-	\EndIf
-	\State $\frac{\partial f}{\partial \xx} (\xx_{Free}) \gets$\texttt{computeCollisionConstraint}($\xx_{Coll}$, $\xx_{Free}$)
-	\State $solved \gets$ \texttt{isFullRank}($\Jf$ , $\frac{\partial f}{\partial \xx} (\xx_{Free})$)
-	\textcolor{blue}{\State $\alpha \gets 0.5\alpha$}
-\EndWhile
-\end{algorithmic}
-\caption{Description of \texttt{findNewConstraint}() which returns a linearly 
-independent constraint w.r.t. previous constraints stacked in $\Jf$.} 
-\label{algo:solveRedundant}
-\end{algorithm}
+\textcolor{red}{Partie en cours de modif par Florent}
 
 Doing so, either the new constraint makes the dimension of the kernel decrease, or 
 makes the configuration in collision ($\xx_{i+1}$ or $\xx_{i+2}$ depending on the 
@@ -742,7 +749,7 @@ would not vanish at $t=1$. Therefore, assumption~(\ref{eq:assumption-1}) is veri
 
 \subsection{Algorithm}
 
-\begin{algorithm}[H]
+\begin{algorithm}
 \begin{algorithmic}%[1] % line numerotation
 \INPUT{path to optimize $\xx_0$}
 \OUTPUT{optimized collision-free path $\xx_0$}
@@ -797,17 +804,6 @@ is set to 0.2. \textcolor{blue}{A further section provides a discussion on the $
 
 \subsection{From 2D basic examples}
 
-\begin{figure}
-	\centering
-	\includegraphics[width=7.8cm]{contact_points6.pdf}
-	\includegraphics[width=8cm]{contact_points2potential.pdf}
-	\caption{Path-optimization results on 2D robots, moving around 
-	gray obstacles. Initial paths are dashed and crosses represent contact points 
-	$\po_c$ related to collision-constraints. Note that, on the left, the detour 
-	completely disappears.}
-	\label{2D_long}
-\end{figure}
-
 Figure~\ref{2D_long} shows the result of our optimizer on 2D cases. Contact points which have 
 led to constraints are represented. They permit to understand how the path is kept out of the obstacles. 
 Unfortunately, it is not possible in the GB method to choose at which distance of the obstacle 
@@ -839,6 +835,16 @@ Figure~\ref{local_box_optim} type of problems where a local passage is very
 constrained by obstacles. Note that this cost is also working with all other 
 examples presented in this paper, and provides better quality results than the original cost.
 
+\begin{figure}
+	\centering
+	\includegraphics[width=7.8cm]{contact_points6.pdf}
+	\includegraphics[width=8cm]{contact_points2potential.pdf}
+	\caption{Path-optimization results on 2D robots, moving around 
+	gray obstacles. Initial paths are dashed and crosses represent contact points 
+	$\po_c$ related to collision-constraints. Note that, on the left, the detour 
+	completely disappears.}
+	\label{2D_long}
+\end{figure}
 
 \subsection{To 3D complex problems}
 
@@ -911,7 +917,10 @@ puzzle has to cross down the
 obstacle using the hole in the middle. The initial path planned with Visibility-PRM 
 contains detours above and below the obstacle, as well as small superfluous
 motions in the hole. 
-The GB optimizer manages to modify the puzzle trajectory even in the hole, but remains less efficient than RS and PRS. We explain this behavior by the fact that, ........
+The GB optimizer manages to modify the puzzle trajectory even in the hole, but remains less efficient than RS and PRS to shorten trajectories in the upper and lower parts. 
+\textcolor{blue}{
+This can be the result of adding collision-constraints on these parts of the trajectories, penalizing the global path length. One idea could be to 	arbitrarily cancel constraints in upper and lower parts, and keeping the ones in the hole. However we want the present GB algorithm to remain general and basic, such constraints relaxation are part of the future possible work.
+}
 %PRS fails to decrease the path length because in this problem, all DOF are closely related to cross the hole. This behavior was also noticed and improved in the PRS implementation of~\cite{GeraertsIJRR07}, acting on a group of DOF. The GB optimizer manages to modify the puzzle trajectory even in the hole, contrary to RS which simply copies the initial path when the trajectory gets near of the obstacle. 
 
 \vspace{0.4cm}
@@ -931,14 +940,14 @@ the first arm motion, creating collision-constraints with the cylinder obstacle.
 	\includegraphics[width=5.8cm,height=4.7cm]{fiad_qinit.png}
 	\includegraphics[width=5.8cm,height=4.7cm]{fiad_qfinal.png}\\
 	\includegraphics[width=5.8cm,height=4.7cm]{fiad_real.png}
-	\includegraphics[width=5.8cm,height=4.7cm]{fiad-trajectorires.png}
+	\includegraphics[width=5.8cm,height=4.7cm]{fiad_traj_prune.png}
 	\caption{(Bottom left) An industrial use-case example proposed by Philips for 	
 	the Factory-in-a-Day project~\cite{factory-day-video}. A similar environment 	
 	has been created (top) to illustrate that our method can comply with an 
 	industrial problem, where initial and final configurations of the UR5 are 
 	constrained in boxes. End-effector trajectories 
-	are illustrated (bottom right): initial (RRT-connect) in red, RS 
-	optimization in blue and the GB optimization in green.}
+	are illustrated (bottom right): initial (RRT-connect) in red, a RS 
+	optimization in blue, a PRS one in cyan and the GB optimization in green.}
 	\label{fiad}
 \end{figure}
 
@@ -1018,18 +1027,7 @@ Secondly, another example of PR2 going from the set to the fridge
 door is presented Figure~\ref{fig:trajectoriesbis:kitchen2} with the mobile base
 trajectories. Here, GB and RS results are similar in terms of length and rendering.
 
-\vspace{0.4cm}
-
-
-\textcolor{blue}{
-For some of the presented benchmarks, convergence graphs of the path 
-length reduction are 
-given Figure~\ref{fig:remainingLength}. The chosen initial paths are unchanged, 
-e.g. correspond to Figures~\ref{fig:trajectories} and~\ref{fig:trajectoriesbis} . 
-Each graph illustrates the percent ratio of the optimized path length over the initial path length, during the optimization time.
-For the random optimizers curves, averages and standard deviations on 50 
-launches are given. It is not a surprise that GB is globally slower than RS which converges faster. 
-}
+\vspace{0.3cm}
 
 \begin{table}
 \renewcommand{\arraystretch}{1.3}
@@ -1042,16 +1040,16 @@ launches are given. It is not a surprise that GB is globally slower than RS whic
   \midrule
   \midrule
   %\textbf{2D slidding-robot (Fig.~\ref{2D_long} right)} & & 11.9 ms & 78.3 & 68.0 & 81.8 \\
-  \textbf{Freeflyer-puzzle} & ($\alpha_{init}=0.1$) & 0 ms & 0 & 0 & 0 \\
+  \textbf{Freeflyer-puzzle} & \todo ($\alpha_{init}=0.1$) & 0 ms & 0 & 0 & 0 \\
   \textbf{Double-arm 4-DOF} & & 39.6 ms & 46.8 & 55.5 & 63.5 \\
   \textbf{UR5-with-spheres} & (RRT, $\alpha_{init}=0.3$) & 3.18 s & 53.8 & 47.5 & 67.8 \\
-  \textbf{UR5-industrial-example} & (RRT) & 0 ms & 0 & 0 & 0 \\
-  \textbf{Baxter-in-office} & & 0 ms & 0 & 0 & 0 \\
+  \textbf{UR5-industrial-example} & \todo (RRT) & 5.50 s & 55.2 & 41.9 & 65.1 \\
+  \textbf{Baxter-in-office} & \todo & 125 s & 26.0 & 36.8 & 74.7 \\
   \textbf{PR2-crossing-arms} & & 882 ms & 19.9 & 43.2 & 95.2 \\
-  \textbf{PR2-in-kitchen-1} & & 0 ms & 0 & 0 & 0 \\
+  \textbf{PR2-in-kitchen-1} & \todo & 12.8 s & 30.6 & 45.3 & 90.9 \\
   \bottomrule
   \end{tabular}  }%scalebox
-\caption{Average results for 50 runs of several examples presented in the 
+\caption{\textcolor{blue}{Average results for 50 runs of several examples presented in the 
 paper. For each run, a solution path is planned by Visibility-PRM 
 (unless `RRT' for RRT-connect is mentioned) as initial guess for the 
 three optimizers. The RS and PRS results correspond to averages of 50 
@@ -1059,35 +1057,45 @@ launches of the random optimizers on each initial guess. The GB
 computation time is the work duration allowed for the random optimizers. 
 $\alpha_{init}=0.2$ unless another value is specified.
 %For the PR2-crossing-arms example only, the right column represents the distance that is traveled by the robot mobile base during the different paths.
-}
+}}
 \label{tab:results}
 \end{table}
+
+% convergence graphs:
+\textcolor{blue}{
+For some of the presented benchmarks, convergence graphs of the path 
+length reduction are 
+given Figure~\ref{fig:remainingLength}. The chosen initial paths are unchanged, 
+e.g. correspond to Figures~\ref{fig:trajectories} and~\ref{fig:trajectoriesbis}. 
+Each graph illustrates the percent ratio of the optimized path length over the initial path length, during the optimization time.
+For the random optimizers curves, averages and standard deviations on 50 
+launches are given. It is not a surprise that GB is globally slower than RS due to the difference of the computations complexity during the optimization. Thus RS converges faster. However, it seems that GB catches up and overcomes RS before ending (see Figures~\ref{fig:remainingLengthComp:pr2alone} and~\ref{fig:remainingLengthComp:pr2kitchen1}), thanks to the optimization of the mobile base motion. Therefore, it could be interesting to investigate the performance of a composed optimizer, starting by a RS stage until convergence and finishing by a GB stage to improve the path length reduction.
+As previously stated in the freeflyer-example (see Figures~\ref{fig:trajectories:puzzle} and~\ref{fig:remainingLengthComp:puzzle}), GB is not only less efficient than RS and PRS but converges slower. 
+This can be partly explained by the fact that collision checking is rapidly performed in such basic geometry problem. This favors the random shortcut tries while GB spends time on the LCQP resolution.
+}
+
+\vspace{0.3cm}
 
 \textcolor{blue}{
 Since the GB optimizer results depend on the shape of the initial guess, e.g. the number of waypoints and the proximity to obstacles, results averages for 50 initial paths of each benchmark are presented in Table~\ref{tab:results}. As mentioned, the paths are obtained from Visibility-PRM or RRT-connect. Due to their nature, these motion planners provide different types of path: the output of Visibility-PRM contains less waypoints and does not tend to be close to the contact, behavior induced by the extension process of RRT.
 }
-
 In some cases, $\alpha_{init}$ was 
 reduced to comply with very narrow passages, or increased in the opposite case.
 \textcolor{blue}{
 The following section deals with the $\alpha_{init}$ influence in depth.
 }
-Except the low-DOF problem of the puzzle, our method almost always provides the 
-shortest paths, whereas it is not even the best criterion to quantify the parasite 
-motions disappearance.
-TO COMPLETE!
-%Finally, the complete vanishing of the mobile base motion in the GB optimized path is noted. 
-%Thus the issue addressed in Figure~\ref{decoupled_DOF_optimization} is solved considering this DOF.
+
+\textcolor{blue}{
+The results seems to be consistent with the trajectories analysis and convergence graphs. Except the low-DOF problem of the puzzle, our method provides 
+shorter or similar results compared to RS. Results seems even to be better when the number of DOF increase, as the baxter and PR2 examples.
+Note that the path length does not necessary account for the parasite motions disappearance.
+}
+%Finally, the complete vanishing of the mobile base motion in the GB optimized path is noted. Thus the issue addressed in Figure~\ref{decoupled_DOF_optimization} is solved considering this DOF.
 
 
 \subsubsection{Analysis of $\alpha_{init}$ influence}
-\textcolor{blue}{Results without comparison to RS and PRS here
-$\alpha_{init}$ could be computed from geometrical considerations.
-}
-TODO !!
-Contrary to a first idea that $\alpha_{init}$ is reduced to 0.05 to slightly modify the very constrained trajectory at each iteration.
 
-\begin{figure}[H]
+\begin{figure}
 	\centering
 	\subfigure[2D slidding-robot (Fig.~\ref{2D_long} right)]{
 		\includegraphics[width=6.8cm,height=5.5cm]{potential2D_alphaInit.png}
@@ -1105,8 +1113,51 @@ Contrary to a first idea that $\alpha_{init}$ is reduced to 0.05 to slightly mod
 		\includegraphics[width=6.8cm,height=5.5cm]{baxter_alphaInit.png}
 		\label{fig:remainingLengthAlphaInit:baxter}
 	}
-  \caption{Influence of $\alpha_{init}$ on the convergence graphs of the GB optimizer.}
+  \caption{\textcolor{blue}{Influence of $\alpha_{init}$ on the convergence graphs of the GB optimizer. For each benchmark, the considered intial paths correspond to the ones of Figures~\ref{fig:trajectories} and~\ref{fig:trajectoriesbis}.}}
   \label{fig:remainingLengthAlphaInit}
+\end{figure}
+
+\textcolor{blue}{
+This section deals with the influence of the parameter $\alpha_{init}$ on the 
+GB convergence. Reducing $\alpha_{init}$ makes Algorithm~\ref{algo:gradient} 
+process smaller iterations. Some expected behaviors are visible in 
+Figure~\ref{fig:remainingLengthAlphaInit}. 
+For instance, Figure~\ref{fig:remainingLengthAlphaInit:2Drobot} illustrates an 
+expected influence of a $\alpha_{init}$ reduction on the final path lengths. Besides, commonly to Figures~\ref{fig:remainingLengthAlphaInit:2Drobot}
+,~\ref{fig:remainingLengthAlphaInit:double_arm} 
+and~\ref{fig:remainingLengthAlphaInit:baxter}, $\alpha_{init}=0.05$ has the higher convergence time.
+}
+
+\textcolor{blue}{
+However, due to the strong non-linearity of the constraints, reduced iterations 
+do not necessary lead to a slower but refined solution. GB can stops earlier 
+in local minimum, which may also have a better path length reduction. This is 
+the case of Figure~\ref{fig:remainingLengthAlphaInit:double_arm} where $\alpha_{init}=0.2$ results in a shorter path than $\alpha_{init}=0.05$. More surprisingly in Figure~\ref{fig:remainingLengthAlphaInit:double_arm}, $\alpha_{init}=0.05$ leads to the worse reduction.
+}
+
+\textcolor{blue}{
+Instead of investigating a way to find a $\alpha_{init}$ conditioned by the problem and the initial path, we plan to adapt $\alpha$ from Algorithm~\ref{algo:gradient} due to geometrical considerations, as the continuous collision checker.
+}
+
+\subsubsection{Influence of a pruning preliminary step}
+\textcolor{blue}{For the ur5-industrial benchmark, we compared the optimization convergence graphs with and without a pruning step. Prune was implemented following~\cite{GeraertsIJRR07}, to remove redundant nodes in the initial path by creating valid shortcuts between the waypoints. RRT-connect has been chosen as motion planner because it usually produces more waypoints that Visibility-PRM, so the impact of pruning is more accountable. Results are given Figure~\ref{fig:pruningInfluence}. The path length reduction of the three optimizers are still compared, but the notable information is the computation time of GB that is 16 times higher without pruning. Such lower computation time prevents the random optimizers to converge, so the GB result appears as better.
+}
+
+\textcolor{blue}{Note that, if applying Prune always reduces the GB optimization time, it sometimes spoils the path length reduction. In fact, there can be cases where multiple waypoints are useful to bypass an obstacle, rather than a long straight line in the configuration space.
+}
+
+\begin{figure}[H]
+	\centering
+	\subfigure[Without pruning]{
+		\includegraphics[width=6.8cm,height=5.5cm]{fiadRRT_comp.png}
+		\label{fig:pruningInfluence:comp}
+	}
+	\subfigure[With pruning]{
+		\includegraphics[width=6.8cm,height=5.5cm]{fiadRRT_comp_prune.png}
+		\label{fig:pruningInfluence:comp_prune}
+	}
+  \caption{\textcolor{blue}{Influence of a pruning step on the optimization processes. RRT-connect provides an initial path with 62 waypoints, which is downed to two waypoints by Prune. Concerning the path length, it is only reduced of 6.2\% by Prune. Thus, final path lengths provided by GB in both cases are equivalent, the major difference results in the computation time of GB.}}
+  \label{fig:pruningInfluence}
 \end{figure}
 
 
@@ -1183,7 +1234,7 @@ This work has been supported by the project ERC Advanced Grant 340050 Actanthrop
 		\includegraphics[width=6.5cm,height=5.5cm]{baxter_traj.png}
 		\label{fig:trajectoriesbis:baxter}
 	}
-  \caption{Other trajectories comparisons of end-effectors or mobile bases (initial path in red, RS output in blue and GB output in green).}
+  \caption{Other trajectories comparisons of end-effectors or mobile bases (initial path in red, RS output in blue, PRS output in cyan and GB output in green).}
   \label{fig:trajectoriesbis}
 \end{figure}
 
@@ -1213,7 +1264,7 @@ This work has been supported by the project ERC Advanced Grant 340050 Actanthrop
 		\includegraphics[width=6.5cm,height=5.5cm]{baxter_comp_prune.png}
 		\label{fig:remainingLengthComp:baxter}
 	}
-  \caption{Convergence graphs of the three optimizers during the optimization process. For each benchmark, the considered intial paths correspond to the ones of Figures~\ref{fig:trajectories} and~\ref{fig:trajectoriesbis}. The remaining path length relative to the initial one is represented. The dashed blue line is the final result of GB. For RS and PRS, the averages and standard deviations (in grey) over 50 launches are plotted.}
+  \caption{\textcolor{blue}{Convergence graphs of the three optimizers during the optimization process. For each benchmark, the considered intial paths correspond to the ones of Figures~\ref{fig:trajectories} and~\ref{fig:trajectoriesbis}. The remaining path length relative to the initial one is represented. The dashed blue line is the final result of GB. For RS and PRS, the averages and standard deviations (in grey) over 50 launches are plotted.}}
   \label{fig:remainingLength}
 \end{figure}
 
