@@ -527,7 +527,7 @@ orthogonal direction of the encountered collision.
 In the collision-configuration $\xx_{i+1}(\tcolli)$, let $\po_c\in \real^3$ be a 
 contact point expressed in the global frame 
 (Figure~\ref{contact-points} left).
-\textcolor{blue}{We denote by
+\textcolor{blue}{We denote by:
   \begin{itemize}
   \item $\po_1^{loc}$ (resp. $\po_2^{loc}$) the coordinate vector of $\po_c$ in the local frame of  $\body_1$ (resp. $\body_2$),
   \item $M_1(\conf) \in SE(3)$ (resp. $M_2(\conf) \in SE(3)$) the rigid-body transformation representing the position of $\body_1$ (resp. $\body_2$) in the global frame, in configuration $\conf$,
@@ -671,58 +671,14 @@ Therefore the following expressions
 \alpha_i \frac{\partial f}{\partial \xx} (\xx_i)\p_i = \frac{d}{dt}g (\traj (0)) & &
 \alpha_i \frac{\partial f}{\partial \xx} (\xx_{i+1})\p_i =\frac{d}{dt}g (\traj (1))
 \end{align*}
-correspond to $(\velocity_{\po_2/\body_1}|\mathbf{u})$, respectively in configurations $\xx_{i}(\tcolli)$ and $\xx_{i+1}(\tcolli)$, where $\velocity_{\po_2/\body_1}$ represents the velocity of point $P_2$ in reference frame $\body_1$. 
+correspond to $(\velocity_{\po_2/\body_1}|\mathbf{u})$, respectively in configurations $\xx_{i}(\tcolli)$ and $\xx_{i+1}(\tcolli)$, where $\velocity_{\po_2/\body_1}$ represents the velocity of point $\po_2$ in reference frame $\body_1$. 
 Note that Assumption~(\ref{eq:assumption-1}) is equivalent to the first above equality to be different from 0. According to the geometric interpretation, Assumption~(\ref{eq:assumption-1}) is violated if and only if $\velocity_{\po_2/\body_1}$ is orthogonal to $\U$. Although very unlikely, this case might appear for some new constraint. In this case, inserting constraint $L_{j+1}$ is useless since
 $$
-\kernel \Jf_i = \kernel \Jf_{i+1}.
+\kernel \Jf_i = \kernel \Jf_{i+1}
 $$
 }
 
 \subsubsection {Algorithm refinment}
-
-\textcolor{blue}{
-When the new constraint is not linearly independent from the set of previous constraints, the algorithm enters an additional loop, performed by Algorithm~\ref{algo:solveRedundant}, in order to find a new constraint that is linearly independent. The loop keeps looking for paths along line segment $[\xx_{i},\xx_{i+1}]$ by dichotomy. A pair containing the latest free path and the latest path in collision, denoted by $(\xx_{Free}, \xx_{Coll})$ is stored along the loop. New iterations are chosen in the middle of this pair. 
-\begin{itemize}
-\item If the new path is collision-free, it replaces $\xx_{Free}$ in the pair.
-\item If the new path is in collision, it replaces $\xx_{Coll}$ in the pair.
-\end{itemize}
-In both cases, a new constraint is built following the method described in Section~\ref{subsubsec:new-constraint}. Two cases are then possible:
-\begin{enumerate}
-\item at some point in the loop the new constraint is linearly independent from the previous constraints. The new constraint is added to $\Jf_{i}$ to give rise to $\Jf_{i+1}$ and the loop is interrupted, or
-\item each new constraint is linearly dependent from the previous constraints and the loop never ends.
-\end{enumerate}
-In the second case, the iterations of the loop converge to a path that we denote by $\bar{\xx}$. $\xx_{Free}$ and $\xx_{Coll}$ also both converge to $\bar{\xx}$. Note that $\bar{\xx}$ lies at the boundary between free paths and paths in collision along the search line. $\bar{\xx}$ necessarily lies at the boundary between free paths and paths in collision. Let us denote by $\bar{\kappa}$ the abscissa along $\bar{\xx}$ where $\body_1$ and $\body_2$ come to contact, and let us denote by $\bar{\po}$ the contact point.
-}
-
-\textcolor{blue}{
-At each iteration, the new linear constraint
-$$
-L_{j+1} = \frac{\partial f}{\partial\xx} (\xx_{Free})
-$$
-is tested. As iterations $\xx_{Free}$ and $\xx_{Coll}$ tend toward $\bar{\xx}$, it can be established by a geometric reasoning analogous to Property~\ref{prop:geometric-reasoning}, that
-$L_{j+1} \p_i$ tends to the norm of the velocity of point $\bar{\po}$ belonging to $\body_2$ in the frame of $\body_1$. The following property summarizes the result of this section.
-}
-
-\textcolor{blue}{
-\begin{property}\label{prop:convergence}
-As long as along iteration $\p_i$, the trajectory $(\xx_i+t\alpha_i\p_i)(\bar{\kappa})$ does not enter in collision with contact point velocity equal to 0 in the frame of $\body_1$, Algorithm~\ref{algo:solveRedundant} converges in a finite number of steps.
-\end{property}
-The above property means that the gradient-based path length optimization algorithm described in this paper converges in all cases, except for ill-defined problems.
-}
-
-
-\textcolor{blue}{
-Therefore the following expressions
-\begin{align*}
-\alpha_i \frac{\partial f}{\partial \xx} (\xx_i)\p_i = \frac{d}{dt}g (\traj (0)) & &
-\alpha_i \frac{\partial f}{\partial \xx} (\xx_{i+1})\p_i =\frac{d}{dt}g (\traj (1))
-\end{align*}
-correspond to $(\velocity_{\po_2/\body_1}|\mathbf{u})$, respectively in configurations $\xx_{i}(\tcolli)$ and $\xx_{i+1}(\tcolli)$, where $\velocity_{\po_2/\body_1}$ represents the velocity of point $\po_2$ in reference frame $\body_1$. 
-Note that Assumption~(\ref{eq:assumption-1}) is equivalent to the first above equality to be different from 0. According to the geometric interpretation, Assumption~(\ref{eq:assumption-1}) is violated if and only if $\velocity_{\po_2/\body_1}$ is orthogonal to $\U$. Although very unlikely, this case might appear for some new constraint. In this case, inserting constraint $L_{j+1}$ is useless since
-$$
-\kernel \Jf_i = \kernel \Jf_{i+1}.
-$$
-}
 
 \begin{algorithm}[b]
 \begin{algorithmic}%[1] % line numerotation
@@ -748,8 +704,6 @@ independent constraint w.r.t. previous constraints stacked in $\Jf$.}
 \label{algo:solveRedundant}
 \end{algorithm}
 
-\subsubsection {Algorithm refinment}
-
 \textcolor{blue}{
 When the new constraint is not linearly independent from the set of previous constraints, the algorithm enters an additional loop, performed by Algorithm~\ref{algo:solveRedundant}, in order to find a new constraint that is linearly independent. The loop keeps looking for paths along line segment $[\xx_{i},\xx_{i+1}]$ by dichotomy. A pair containing the latest free path and the latest path in collision, denoted by $(\xx_{Free}, \xx_{Coll})$ is stored along the loop. New iterations are chosen in the middle of this pair. 
 \begin{itemize}
@@ -758,29 +712,32 @@ When the new constraint is not linearly independent from the set of previous con
 \end{itemize}
 In both cases, a new constraint is built following the method described in Section~\ref{subsubsec:new-constraint}. Two cases are then possible:
 \begin{enumerate}
-\item at some point in the loop the new constraint is linearly independent from the previous constraints. The new constraint is added to $\Jf_{i}$ to give rise to $\Jf_{i+1}$ and the loop is interrupted, or
+\item at some point in the loop the new constraint is linearly independent from the previous constraints. The new constraint is added to $\Jf_{i}$ to give rise to $\Jf_{i+1}$, and the loop is interrupted, or
+%the new constraint makes the dimension of the kernel decrease
 \item each new constraint is linearly dependent from the previous constraints and the loop never ends.
 \end{enumerate}
-In the second case, the iterations of the loop converge to a path that we denote by $\bar{\xx}$. $\xx_{Free}$ and $\xx_{Coll}$ also both converge to $\bar{\xx}$. Note that $\bar{\xx}$ lies at the boundary between free paths and paths in collision along the search line.
+In the second case, the iterations of the loop converge to a path that we denote by $\bar{\xx}$. $\xx_{Free}$ and $\xx_{Coll}$ also both converge to $\bar{\xx}$. $\bar{\xx}$ necessarily lies at the boundary between free paths and paths in collision. Let us denote by $\bar{\kappa}$ the abscissa along $\bar{\xx}$ where $\body_1$ and $\body_2$ come to contact, and let us denote by $\bar{\po}$ the contact point.
 }
 
-Doing so, either the new constraint makes the dimension of the kernel decrease, or 
-makes the configuration in collision ($\xx_{i+1}$ or $\xx_{i+2}$ depending on the 
-case above) and the latest collision-free path ($\xx_{i}$ or $\xx_{i+2}$) become 
-closer and closer. And the continuity of $f$ implies that $\dot{\conf}(0)$ and 
-$\dot{\conf}(1)$
-converge toward the norm of the velocity of point $\po_2$ in the reference frame of 
-$\body_1$ along trajectory~(\ref{eq:trajectory}), when $\po_2$ and $\po_1$ come to 
-contact. We already handled this situation previously, admitting that the velocity norm 
-would not vanish at $t=1$. Therefore, assumption~(\ref{eq:assumption-1}) is verified.
-%$$
-%\frac{\partial f}{\partial \xx}(\xx_i)\p_i \ \ \ \mbox{and}\ \ \ \frac{\partial f}{\partial \xx}(\xx_{i+1})\p_i
-%$$
+\textcolor{blue}{
+At each iteration, the new linear constraint
+$$
+L_{j+1} = \frac{\partial f}{\partial\xx} (\xx_{Free})
+$$
+is tested. As iterations $\xx_{Free}$ and $\xx_{Coll}$ tend toward $\bar{\xx}$, it can be established by a geometric reasoning analogous to Property~\ref{prop:geometric-reasoning}, that
+$L_{j+1} \p_i$ tends to the norm of the velocity of point $\bar{\po}$ belonging to $\body_2$ in the frame of $\body_1$. The following property summarizes the result of this section.
+}
 
+\textcolor{blue}{
+\begin{property}\label{prop:convergence}
+As long as along iteration $\p_i$, the trajectory $(\xx_i+t\alpha_i\p_i)(\bar{\kappa})$ does not enter in collision with contact point velocity equal to 0 in the frame of $\body_1$, Algorithm~\ref{algo:solveRedundant} converges in a finite number of steps.
+\end{property}
+The above property means that the gradient-based algorithm described in this paper converges in all cases, except for ill-defined problems.
+}
 
 \subsection{Algorithm}
 
-\begin{algorithm}
+\begin{algorithm}[b]
 \begin{algorithmic}%[1] % line numerotation
 \INPUT{path to optimize $\xx_0$}
 \OUTPUT{optimized collision-free path $\xx_0$}
@@ -835,6 +792,17 @@ is set to 0.2. \textcolor{blue}{A further section provides a discussion on the $
 
 \subsection{From 2D basic examples}
 
+\begin{figure}[b]
+	\centering
+	\includegraphics[width=7.8cm]{contact_points6.pdf}
+	\includegraphics[width=8cm]{contact_points2potential.pdf}
+	\caption{Path-optimization results on 2D robots, moving around 
+	gray obstacles. Initial paths are dashed and crosses represent contact points 
+	$\po_c$ related to collision-constraints. Note that, on the left, the detour 
+	completely disappears.}
+	\label{2D_long}
+\end{figure}
+
 Figure~\ref{2D_long} shows the result of our optimizer on 2D cases. Contact points which have 
 led to constraints are represented. They permit to understand how the path is kept out of the obstacles. 
 Unfortunately, it is not possible in the GB method to choose at which distance of the obstacle 
@@ -866,16 +834,7 @@ Figure~\ref{local_box_optim} type of problems where a local passage is very
 constrained by obstacles. Note that this cost is also working with all other 
 examples presented in this paper, and provides better quality results than the original cost.
 
-\begin{figure}
-	\centering
-	\includegraphics[width=7.8cm]{contact_points6.pdf}
-	\includegraphics[width=8cm]{contact_points2potential.pdf}
-	\caption{Path-optimization results on 2D robots, moving around 
-	gray obstacles. Initial paths are dashed and crosses represent contact points 
-	$\po_c$ related to collision-constraints. Note that, on the left, the detour 
-	completely disappears.}
-	\label{2D_long}
-\end{figure}
+
 
 \subsection{To 3D complex problems}
 
